@@ -20,6 +20,7 @@ import time
 import random
 #加载KID档案信息
 from .config import kid_name_list, kid_data
+from .list2 import kid_name_list2, kid_data2
 #加载商店信息和商店交互
 from .shop import item, today_item
 #加载剧情和NPC档案
@@ -522,28 +523,51 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
 jd = on_fullmatch('kidjd', permission=GROUP, priority=1, block=True)
 @jd.handle()
 async def zhuajd(bot: Bot, event: Event):
+    user_id = event.get_user_id()
+
     #打开文件
     data = {}
-    user_id = event.get_user_id()
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    
+
+    data2 = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data2 = json.load(f)
+
+    #计数
+    count = [0, 0, 0, 0, 0] #抓的数量
+    max   = [0, 0, 0, 0, 0] #总数
+
+    jindu = 0  #抓的进度
+    maxjindu = 0  #总进度
+
+
+    #计算总数
+    for k, v in kid_name_list.items():
+        max[int(k)-1] = len(v)
+
+    for k, v in kid_name_list2.items():
+        max[int(k)-1] += len(v)
+
+
+    #计算收集数
     if(str(user_id) in data):
-        #计数
-        count = [0, 0, 0, 0, 0] #抓的数量
-        max   = [0, 0, 0, 0, 0] #总数
-        jindu = 0  #抓的进度
-        maxjindu = 0  #总进度
-        #遍历Kid档案并和玩家抓到的相比较
+        #一号猎场进度
         for k, v in kid_name_list.items():
-            #总数
-            max[int(k)-1] = len(v)
             #收集数
             for name in v:
                 for j in data[str(user_id)]:
                     if(name.lower()==j.lower()):
                         count[int(k)-1] += 1
                         jindu += int(k)
+
+        #二号猎场进度
+        if(str(user_id) in data2):
+            for k, v in data2[str(user_id)]:
+                level = k[0]
+                count[int(level)-1] += 1
+                jindu += int(level)
+
         #计算总进度
         maxjindu = max[0]+2*max[1]+3*max[2]+4*max[3]+5*max[4]
         jindu = int(jindu/maxjindu*10000)/100
