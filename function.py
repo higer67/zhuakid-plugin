@@ -55,7 +55,7 @@ def give_spike(level):
     if(level==5): spike_give = 25   
     return spike_give
 
-#给定Kid的文件坐标，输出该Kid相关的信息
+#给定Kid的文件坐标，输出该Kid相关的信息 [等级，名字，图像路径，描述，编号，猎场编号]
 def print_zhua(level, num, liechang_number):
     kid_path = current_liechang(liechang_number)
     #锁定kid档案
@@ -186,7 +186,7 @@ def find_kid_single_lc(value, liechang_number):
 
     return 0
 
-#根据名字查找kid的所在的猎场和等级和位置
+#根据名字查找kid的所在的猎场和等级和位置[等级，编号，几号猎场]
 def find_kid(value):
     #一号猎场查询，由于一号猎场为内测时期产物，没有经过良好维护，现在已经成石山，所以特别查询
     for k, v in kid_data.items():

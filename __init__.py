@@ -435,7 +435,7 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
     data2 = {}
     if(nums[2]!='1'):
         with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
-            data2 = json.load(f)    
+            data2 = json.load(f)
 
     #进入表中进行查询
     if(str(user_id) in data):
@@ -474,7 +474,7 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
                 #发送图片
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
             else:
-                await zs.send(f"你还没抓到过{name}", at_sender=True)
+                await zs.finish(f"你还没抓到过{name}", at_sender=True)
 
     else:
         await zs.finish("你还没尝试抓过kid.....")
@@ -491,14 +491,29 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
+    #查找该名字的Kid的图像文件坐标
+    nums = find_kid(name)
+    #打开应该查询的表
+    data2 = {}
+    if(nums[2]!='1'):
+        with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
+            data2 = json.load(f)
+
     user_id = event.get_user_id()
     if(str(user_id) in data):
         #查看Kid数量
-        if(name in data[str(user_id)] and (not name in other)):
-            number = data[str(user_id)][name]
-            await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+        if(nums[2]=='1'):
+            if(name in data[str(user_id)] and (not name in other)):
+                number = data[str(user_id)][name]
+                await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+            else:
+                await cknum.send(f"你还没抓到过{name}", at_sender=True)
         else:
-            await cknum.send(f"你还没抓到过{name}", at_sender=True)
+            if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
+                number = data2[str(user_id)][nums[0]+'_'+nums[1]]
+                await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+            else:
+                await cknum.finish(f"你还没抓到过{name}", at_sender=True)
 
     else:
         await cknum.finish("你还没尝试抓过kid.....")
