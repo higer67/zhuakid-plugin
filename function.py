@@ -101,6 +101,7 @@ def zhua_random(a=10, b=50, c=200, d=500, liechang_number='1'):
     if(rnd > d and rnd <= 1000): level = 1
     #根据猎场确定路径
     kid_path = current_liechang(liechang_number)
+    #各等级路径
     kid_level1_path = kid_path / kid_level1
     kid_level2_path = kid_path / kid_level2
     kid_level3_path = kid_path / kid_level3

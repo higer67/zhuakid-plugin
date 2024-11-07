@@ -1,6 +1,6 @@
 #加载异步与通信
 #from httpx import AsyncClient
-#import asyncio
+import asyncio
 #加载机器人框架
 from nonebot.adapters.onebot.v11 import MessageSegment, Message
 from nonebot.adapters.onebot.v11 import GROUP
@@ -37,10 +37,6 @@ group_img = Path() / "data" / "group.jpg"
 
 #除了Kid名字以外的其他key值
 other = ["next_time", "spike", "date", "buff", "item", "lc"]
-
-######全局变量######
-cp_running = True    
-du_running = True
 
 #隐藏级别kid
 kid_level0 = "Kid0"
@@ -944,10 +940,6 @@ async def ckdj_handle(arg: Message = CommandArg()):
 ticket = on_fullmatch('/cp', permission=GROUP, priority=1, block=True)
 @ticket.handle()
 async def ticket_handle(bot: Bot, event: GroupMessageEvent):
-    #彩票机是否运作
-    global cp_running
-    logger.info(f"刮刮乐系统开关：{str(cp_running)}")
-    if(not cp_running): return
 
     current_time = datetime.datetime.now().time()
     hour = current_time.hour
@@ -976,9 +968,8 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
             with open(user_path / file_name, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
             
-            cp_running = False
-            time.sleep(3)
-            cp_running = True
+            asyncio.sleep(3)   #延时三秒
+
             await ticket.finish(f"本次刮刮乐你获得{str(spike)}刺儿", at_sender=True)
         else:
             await ticket.finish(f"你没钱买刮刮乐了，你需要150刺儿，你只有{str(data[str(user_id)]['spike'])}刺儿", at_sender=True)
@@ -989,10 +980,6 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
 dubo = on_command('du', permission=GROUP, priority=1, block=True)
 @dubo.handle()
 async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #赌场是否运作
-    global du_running
-    logger.info(f"赌场系统开关：{str(du_running)}")
-    if(not du_running): return
 
     person_num = 5  #一局最多人数
 
@@ -1016,6 +1003,11 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
     if(str(user_id) in data):
 
         want_kid = str(arg).lower()
+
+        #超出上限不能du
+        if(data[str(user_id)].get(want_kid, 0) > 20):
+            await dubo.finish(f"你的{want_kid}数量已经达到上限了！", at_sender=True)
+
         nums = find_kid(want_kid)
         if(nums!=0):
             if(not str(group) in data_du):
@@ -1036,11 +1028,11 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             else:
                 await dubo.finish("你已经加入该局啦！", at_sender=True)
 
-            #如果满10个人了就开赌
+            #如果满5个人了就开赌
             if(data_du[str(group)]['person']==person_num):
                 msg = ""  #消息段
                 point = []
-                #给出10个点数
+                #给出5个点数
                 for i in range(person_num):
                     point.append(random.randint(10000, 20000))
                 
@@ -1052,7 +1044,8 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                         if(point[j]<point[i]):
                             other_id = data_du[str(group)]['member'][j]
                             for k, v in data[str(other_id)].items():
-                                if(k.lower() == data_du[str(group)]['want'][i] and v >= 1):
+                                k = k.lower()
+                                if(k == data_du[str(group)]['want'][i] and v >= 1):
                                     #对手减少kid
                                     data[str(other_id)][k] -= 1
                                     #你增加kid
@@ -1082,9 +1075,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 #发送消息
                 await dubo.send("正在结算本场赌局.....")  #加载消息
 
-                du_running = False
-                time.sleep(3)
-                du_running = True
+                asyncio.sleep(3)    #延时三秒
 
                 if(msg==""): await dubo.finish("本局没有人得到任何东西。")
                 await dubo.finish(msg)
