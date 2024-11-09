@@ -15,7 +15,6 @@ from pathlib import Path
 import json
 #加载读取系统时间相关
 import datetime
-import time
 #加载数学算法相关
 import random
 #加载KID档案信息
@@ -224,7 +223,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         #如果是2号猎场以上需要存到另外的表中
         data2 = {}
         if(data[str(user_id)]['lc']!='1'):
-            with open(user_path / f"UserList{data[str(user_id)]['lc']}", 'r', encoding='utf-8') as f:
+            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
         #确定抓到哪个kid
@@ -261,7 +260,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             
         #写入kid收集表(副统计表)
         if(data[str(user_id)]['lc']!='1'):
-            with open(user_path / f"UserList{data[str(user_id)]['lc']}", 'w', encoding='utf-8') as f:
+            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'w', encoding='utf-8') as f:
                 json.dump(data2, f, indent=4)
 
         #写入主数据表
