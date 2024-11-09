@@ -111,10 +111,10 @@ def zhua_random(a=10, b=50, c=200, d=500, liechang_number='1'):
     current_name_list = kid_name_list
     current_data = kid_data
     if(liechang_number=='1'):
-        current_name_list - kid_name_list
+        current_name_list = kid_name_list
         current_data = kid_data
     if(liechang_number=='2'):
-        current_name_list - kid_name_list2
+        current_name_list = kid_name_list2
         current_data = kid_data2
     #根据等级确定坐标
     if(level == 1): zhua_path = kid_level1_path

@@ -15,6 +15,7 @@ from pathlib import Path
 import json
 #加载读取系统时间相关
 import datetime
+import time
 #加载数学算法相关
 import random
 #加载KID档案信息
@@ -223,6 +224,8 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         #如果是2号猎场以上需要存到另外的表中
         data2 = {}
         if(data[str(user_id)]['lc']!='1'):
+            if(str(user_id)!=bot_owner_id):
+                await catch.finish("前面的区域请以后再来探索吧")
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
@@ -252,11 +255,15 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             if(data[str(user_id)][name] < 20):
                 data[str(user_id)][name] += 1  #数量+1
         else:
-            if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
-                new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                data2[str(user_id)][str(level)+'_'+str(num)] = 0
-            if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
-                data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+            if(str(user_id) in data2):
+                if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
+                    new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                    data2[str(user_id)][str(level)+'_'+str(num)] = 0
+                if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
+                    data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+            else:
+                data2[str(user_id)] = {}
+                data2[str(user_id)][str(level)+'_'+str(num)] = 1
             
         #写入kid收集表(副统计表)
         if(data[str(user_id)]['lc']!='1'):
@@ -444,11 +451,6 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
                 kid = print_zhua(level,number,'1')
                 img         = kid[2]
                 description = kid[3]
-                #得到描述
-                if(name=="虚无kid"):
-                    description = "或许有什么东西被虚无掩盖着？"
-                else:
-                    description = kid_data[nums[0]][nums[1]]['description']
 
                 #发送图片
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
@@ -461,11 +463,6 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
                 kid = print_zhua(level,number,nums[2])
                 img         = kid[2]
                 description = kid[3]
-                #得到描述
-                if(name=="虚无kid"):
-                    description = "或许有什么东西被虚无掩盖着？"
-                else:
-                    description = kid_data[nums[0]][nums[1]]['description']
 
                 #发送图片
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
@@ -526,7 +523,7 @@ async def zhuajd(bot: Bot, event: Event):
         data = json.load(f)
 
     data2 = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+    with open(user_path / f"UserList2.json", 'r', encoding='utf-8') as f:
         data2 = json.load(f)
 
     #计数
@@ -558,8 +555,9 @@ async def zhuajd(bot: Bot, event: Event):
 
         #二号猎场进度
         if(str(user_id) in data2):
-            for k, v in data2[str(user_id)]:
+            for k in data2[str(user_id)].keys():
                 level = k[0]
+                logger.info(f"{level}等级")
                 count[int(level)-1] += 1
                 jindu += int(level)
 
@@ -860,6 +858,8 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                 #打开副表
                 data2 = {}
                 if(lc!='1'):
+                    if(str(user_id)!=bot_owner_id):
+                        await catch.finish("前面的区域请以后再来探索吧")
                     with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
 
@@ -872,13 +872,15 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                     if(data[str(user_id)][information[1]] < 20):
                         data[str(user_id)][information[1]] += 1
                 else:
-                    kid_id = str(level)+'_'+str(num)
-                    if(not kid_id in data2[str(user_id)]):
-                        new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                        data2[str(user_id)][kid_id] = 0
-                    
-                    if(data2[str(user_id)][kid_id] < 20):
-                        data2[str(user_id)][kid_id] += 1                  
+                    if(str(user_id) in data2):
+                        if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
+                            new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                            data2[str(user_id)][str(level)+'_'+str(num)] = 0
+                        if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
+                            data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+                    else:
+                        data2[str(user_id)] = {}
+                        data2[str(user_id)][str(level)+'_'+str(num)] = 1               
 
                 #奖励刺儿
                 spike_give = give_spike(level)
@@ -967,7 +969,7 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
             with open(user_path / file_name, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
             
-            asyncio.sleep(3)   #延时三秒
+            time.sleep(3)   #延时三秒
 
             await ticket.finish(f"本次刮刮乐你获得{str(spike)}刺儿", at_sender=True)
         else:
@@ -1074,7 +1076,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 #发送消息
                 await dubo.send("正在结算本场赌局.....")  #加载消息
 
-                asyncio.sleep(3)    #延时三秒
+                time.sleep(3)    #延时三秒
 
                 if(msg==""): await dubo.finish("本局没有人得到任何东西。")
                 await dubo.finish(msg)

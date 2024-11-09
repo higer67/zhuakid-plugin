@@ -22,7 +22,6 @@ kid_name_list2 = {
         '靖尊kid',
         '天使kid',
         '白kid'
-
     ],
     '3':[
         '仙人掌',
@@ -36,7 +35,6 @@ kid_name_list2 = {
         '提取器kid',
         '幽灵涂鸦',
         'hd kid'
-
     ],
     '4':[
         'tevi',
@@ -107,7 +105,6 @@ kid_data2 = {
             'bgjw',
             'gif': True
         }
-        
     },
     '2':{
         '1':{
@@ -164,7 +161,6 @@ kid_data2 = {
             'description':
             '不是每一只白Kid都有超能力'
         }
-
     },
     '3':{
         '1':{
@@ -223,7 +219,6 @@ kid_data2 = {
             'desciption':
             '画质提升了！'
         }
-
     },
     '4':{
         '1':{
