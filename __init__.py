@@ -276,6 +276,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                 if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
                     data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
             else:
+                new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data2[str(user_id)] = {}
                 data2[str(user_id)][str(level)+'_'+str(num)] = 1
             
