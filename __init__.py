@@ -1049,98 +1049,107 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
         nums = find_kid(want_kid)
 
+        if(nums==0): return
+
+        #如果不是du池里的kid就被踢出
+        if(str(group) in data_du):
+            if(nums[2]!=data_du[str(group)]['lc']):
+                await dubo.finish("当前局du不了这个kid", at_sender=True)       
+
         #如果赌的不是一号猎场就打开副数据表
         data2 = {}
         if(nums[2]!='1'):
             with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
+            if(not str(user_id) in data2):
+                await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
+
         #加入赌场
-        if(nums!=0):
-            if(not str(group) in data_du):
-                data_du[str(group)] = {}
-                data_du[str(group)]['lc'] = nums[2]
-                data_du[str(group)]['person'] = 0
-                data_du[str(group)]['member'] = []
-                data_du[str(group)]['want'] = []
-            else:
-                if(nums[2]!=data_du[str(group)]['lc']):
-                    await dubo.finish("当前局du不了这个kid", at_sender=True)
+        if(not str(group) in data_du):
+            data_du[str(group)] = {}
+            data_du[str(group)]['lc'] = nums[2]
+            data_du[str(group)]['person'] = 0
+            data_du[str(group)]['member'] = []
+            data_du[str(group)]['want'] = []
+        else:
+            if(nums[2]!=data_du[str(group)]['lc']):
+                await dubo.finish("当前局du不了这个kid", at_sender=True)
 
-            if(not user_id in data_du[str(group)]['member']):
+        if(not user_id in data_du[str(group)]['member']):
 
-                if(data[str(user_id)]['spike'] < 20):
-                    await dubo.finish("你需要花费20刺儿进入该局，你的刺儿不够了")
+            if(data[str(user_id)]['spike'] < 20):
+                await dubo.finish("你需要花费20刺儿进入该局，你的刺儿不够了")
 
-                data_du[str(group)]['person'] += 1   #加入一人
-                data_du[str(group)]['member'].append(user_id)
-                data_du[str(group)]['want'].append(want_kid)
-                data[str(user_id)]['spike'] -= 20
-            else:
-                await dubo.finish("你已经加入该局啦！", at_sender=True)
+            data_du[str(group)]['person'] += 1   #加入一人
+            data_du[str(group)]['member'].append(user_id)
+            data_du[str(group)]['want'].append(want_kid)
+            data[str(user_id)]['spike'] -= 20
+        else:
+            await dubo.finish("你已经加入该局啦！", at_sender=True)
 
-            #如果满5个人了就开赌
-            if(data_du[str(group)]['person']==person_num):
-                msg = ""  #消息段
-                point = []
-                #给出5个点数
-                for i in range(person_num):
-                    point.append(random.randint(10000, 20000))
+        #如果满5个人了就开赌
+        if(data_du[str(group)]['person']==person_num):
+            msg = ""  #消息段
+            point = []
+            #给出5个点数
+            for i in range(person_num):
+                point.append(random.randint(10000, 20000))
 
-                #如果不是一猎场就对副数据表进行修改
-                if(nums[2]!='1'): data = data2
+            #如果不是一猎场就对副数据表进行修改
+            if(nums[2]!='1'): data = data2
 
-                #根据点数大小来决定数据交换
-                for i in range(person_num):
-                    success = False
-                    self_id = data_du[str(group)]['member'][i]
-                    for j in range(person_num):
-                        if(point[j]<point[i]):
-                            other_id = data_du[str(group)]['member'][j]
-                            for k, v in data[str(other_id)].items():
-                                k = k.lower()
-                                if(k == data_du[str(group)]['want'][i] and v >= 1):
-                                    #对手减少kid
-                                    data[str(other_id)][k] -= 1
-                                    #你增加kid
-                                    if(not k in data[str(self_id)]): data[str(self_id)][k] = 0
-                                    data[str(self_id)][k] += 1
-                                    #增加消息段
-                                    msg += MessageSegment.at(self_id)
-                                    msg += "获得了"
-                                    msg += MessageSegment.at(other_id)
-                                    msg += f"的{k}一个\n"
+            #根据点数大小来决定数据交换
+            for i in range(person_num):
+                success = False
+                self_id = data_du[str(group)]['member'][i]
+                for j in range(person_num):
+                    if(point[j]<point[i]):
+                        other_id = data_du[str(group)]['member'][j]
+                        for k, v in data[str(other_id)].items():
+                            k = k.lower()
+                            if(k == data_du[str(group)]['want'][i] and v >= 1):
+                                #对手减少kid
+                                data[str(other_id)][k] -= 1
+                                #你增加kid
+                                if(not k in data[str(self_id)]): data[str(self_id)][k] = 0
+                                data[str(self_id)][k] += 1
+                                #增加消息段
+                                msg += MessageSegment.at(self_id)
+                                msg += "获得了"
+                                msg += MessageSegment.at(other_id)
+                                msg += f"的{k}一个\n"
 
-                                    success = True
-                                    break  #结束该循环
-                            
-                            if(success==True): break
-            
-                #写入文件
-                del data_du[str(group)]
+                                success = True
+                                break  #结束该循环
+                        
+                        if(success==True): break
+        
+            #写入文件
+            del data_du[str(group)]
 
-                with open(duchang_list, 'w', encoding='utf-8') as f:
-                    json.dump(data_du, f, indent=4)
+            with open(duchang_list, 'w', encoding='utf-8') as f:
+                json.dump(data_du, f, indent=4)
 
-                #更新用户数据文件
-                with open(user_path / file_name, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=4)
+            #更新用户数据文件
+            with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
 
-                #发送消息
-                await dubo.send("正在结算本场赌局.....")  #加载消息
+            #发送消息
+            await dubo.send("正在结算本场赌局.....")  #加载消息
 
-                time.sleep(3)    #延时三秒
+            time.sleep(3)    #延时三秒
 
-                if(msg==""): await dubo.finish("本局没有人得到任何东西。")
-                await dubo.finish(msg)
+            if(msg==""): await dubo.finish("本局没有人得到任何东西。")
+            await dubo.finish(msg)
 
-            else:
+        else:
 
-                #写入文件
-                with open(duchang_list, 'w', encoding='utf-8') as f:
-                    json.dump(data_du, f, indent=4)
+            #写入文件
+            with open(duchang_list, 'w', encoding='utf-8') as f:
+                json.dump(data_du, f, indent=4)
 
-                await dubo.finish(f"成功进入该局！当前共{data_du[str(group)]['person']}人，本局du池为猎场{data_du[str(group)]['lc']}", at_sender=True)
+            await dubo.finish(f"成功进入该局！当前共{data_du[str(group)]['person']}人，本局du池为猎场{data_du[str(group)]['lc']}", at_sender=True)
 
 
     else:
