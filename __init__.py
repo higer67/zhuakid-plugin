@@ -28,7 +28,8 @@ from .story import npc_da
 #加载隐藏kid档案
 from .secret import secret_list
 #加载抓kid相关的函数
-from .function import *  
+from .function import *
+from .event import event_happen
 
 ########数据信息#######
 
@@ -185,7 +186,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         if (str(user_id) in data):
 
             #一些啥都干不了的buff
-            if(data[user_id].get('buff')=='lost'): return
+            if(data[str(user_id)].get('buff')=='lost'): return
 
             #读取信息
             next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
@@ -229,11 +230,12 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         if(not 'lc' in data[str(user_id)]):
             data[str(user_id)]['lc'] = '1'
 
+        #触发事件
+        await event_happen(data,str(user_id),catch)
+
         #如果是2号猎场以上需要存到另外的表中
         data2 = {}
         if(data[str(user_id)]['lc']!='1'):
-            if(str(user_id)!=bot_owner_id):
-                await catch.finish("前面的区域请以后再来探索吧")
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
@@ -305,7 +307,7 @@ async def dailyqd(bot: Bot, event: Event):
         if(str(user_id) in data):
 
             #一些啥都干不了的buff
-            if(data[user_id].get('buff')=='lost'): return
+            if(data[str(user_id)].get('buff')=='lost'): return
 
             #若不存在spike，则开一个信息存储
             if(not 'spike' in data[str(user_id)]):
@@ -681,7 +683,7 @@ async def buy_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
     if(str(user_id) in data):
 
         #一些啥都干不了的buff
-        if(data[user_id].get('buff')=='lost'): return
+        if(data[str(user_id)].get('buff')=='lost'): return
 
         #获取购买指令参数
         text = str(arg)
@@ -756,7 +758,7 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
     if(str(user_id) in data):
 
         #一些啥都干不了的buff
-        if(data[user_id].get('buff')=='lost'): return
+        if(data[str(user_id)].get('buff')=='lost'): return
 
         if("item" in data[str(user_id)]):
             use_item_name = str(arg)  #获取使用道具名称
@@ -884,8 +886,6 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                 #打开副表
                 data2 = {}
                 if(lc!='1'):
-                    if(str(user_id)!=bot_owner_id):
-                        await catch.finish("前面的区域请以后再来探索吧")
                     with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
 
@@ -982,7 +982,7 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
     if(str(user_id) in data):
 
         #一些啥都干不了的buff
-        if(data[user_id].get('buff')=='lost'): return
+        if(data[str(user_id)].get('buff')=='lost'): return
 
         if(data[str(user_id)]['spike'] >= 150):
             spike = 0
@@ -1034,7 +1034,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
     if(str(user_id) in data):
 
         #一些啥都干不了的buff
-        if(data[user_id].get('buff')=='lost'): return
+        if(data[str(user_id)].get('buff')=='lost'): return
 
         want_kid = str(arg).lower()
 
