@@ -136,7 +136,7 @@ def zhua_random(a=10, b=50, c=200, d=500, liechang_number='1'):
     #描述信息
     description = current_data.get(str(level)).get(str(num)).get('description')
     #确定该KID的打印信息
-    kid = [level, name, img, description, num]
+    kid = [level, name, img, description, num, liechang_number]
     return kid
 
 ######打印商品信息######

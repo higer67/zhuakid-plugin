@@ -455,17 +455,20 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
                 #发送图片
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
         else:
-            if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
-                #根据等级确定坐标
-                level = int(nums[0])
-                number = int(nums[1])
+            if(str(user_id) in data2):
+                if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
+                    #根据等级确定坐标
+                    level = int(nums[0])
+                    number = int(nums[1])
 
-                kid = print_zhua(level,number,nums[2])
-                img         = kid[2]
-                description = kid[3]
+                    kid = print_zhua(level,number,nums[2])
+                    img         = kid[2]
+                    description = kid[3]
 
-                #发送图片
-                await zs.finish(MessageSegment.image(img) + description, at_sender=True)
+                    #发送图片
+                    await zs.finish(MessageSegment.image(img) + description, at_sender=True)
+                else:
+                    await zs.finish(f"你还没抓到过{name}", at_sender=True)
             else:
                 await zs.finish(f"你还没抓到过{name}", at_sender=True)
 
@@ -502,9 +505,12 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
             else:
                 await cknum.send(f"你还没抓到过{name}", at_sender=True)
         else:
-            if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
-                number = data2[str(user_id)][nums[0]+'_'+nums[1]]
-                await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+            if(str(user_id) in data2):
+                if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
+                    number = data2[str(user_id)][nums[0]+'_'+nums[1]]
+                    await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+                else:
+                    await cknum.finish(f"你还没抓到过{name}", at_sender=True)
             else:
                 await cknum.finish(f"你还没抓到过{name}", at_sender=True)
 
@@ -865,12 +871,12 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
 
                 #计数
                 if(lc=='1'):
-                    if(not information[1] in data[str(user_id)]):
+                    if(not name in data[str(user_id)]):
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                        data[str(user_id)][information[1]] = 0
+                        data[str(user_id)][name] = 0
                     
-                    if(data[str(user_id)][information[1]] < 20):
-                        data[str(user_id)][information[1]] += 1
+                    if(data[str(user_id)][name] < 20):
+                        data[str(user_id)][name] += 1
                 else:
                     if(str(user_id) in data2):
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
