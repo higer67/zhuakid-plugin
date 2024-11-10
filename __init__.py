@@ -1,6 +1,6 @@
 #加载异步与通信
 #from httpx import AsyncClient
-import asyncio
+#import asyncio
 #加载机器人框架
 from nonebot.adapters.onebot.v11 import MessageSegment, Message
 from nonebot.adapters.onebot.v11 import GROUP
@@ -142,6 +142,10 @@ async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
     number = str(arg)     #猎场编号
     if(user_id in data):
         if(number in ['1','2']):
+
+            #一些啥都干不了的buff
+            if(data[user_id].get('buff')=='lost'): return
+
             #原本就在这个猎场
             if('lc' in data[user_id]):
                 if(data[user_id]['lc']==number):
@@ -179,6 +183,10 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         user_id = event.user_id  #qq号
         current_time = datetime.datetime.now()  #读取当前系统时间
         if (str(user_id) in data):
+
+            #一些啥都干不了的buff
+            if(data[user_id].get('buff')=='lost'): return
+
             #读取信息
             next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
             #如果受伤了则无法抓
@@ -295,6 +303,10 @@ async def dailyqd(bot: Bot, event: Event):
         user_id = event.get_user_id() #获取qq号
         #如果注册账号了就可以签到
         if(str(user_id) in data):
+
+            #一些啥都干不了的buff
+            if(data[user_id].get('buff')=='lost'): return
+
             #若不存在spike，则开一个信息存储
             if(not 'spike' in data[str(user_id)]):
                 data[str(user_id)]['spike'] = 0
@@ -667,6 +679,10 @@ async def buy_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
         data = json.load(f)
 
     if(str(user_id) in data):
+
+        #一些啥都干不了的buff
+        if(data[user_id].get('buff')=='lost'): return
+
         #获取购买指令参数
         text = str(arg)
         #解析购买参数
@@ -738,6 +754,10 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
 
     user_id = event.get_user_id()
     if(str(user_id) in data):
+
+        #一些啥都干不了的buff
+        if(data[user_id].get('buff')=='lost'): return
+
         if("item" in data[str(user_id)]):
             use_item_name = str(arg)  #获取使用道具名称
             success = 0  #0代表没有效果，1代表成功，2代表失败
@@ -960,6 +980,10 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
     user_id = event.get_user_id()
 
     if(str(user_id) in data):
+
+        #一些啥都干不了的buff
+        if(data[user_id].get('buff')=='lost'): return
+
         if(data[str(user_id)]['spike'] >= 150):
             spike = 0
             rnd = random.randint(1,100)
@@ -1008,6 +1032,9 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
         data_du = json.load(f)
 
     if(str(user_id) in data):
+
+        #一些啥都干不了的buff
+        if(data[user_id].get('buff')=='lost'): return
 
         want_kid = str(arg).lower()
 
