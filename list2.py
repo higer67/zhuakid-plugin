@@ -165,58 +165,58 @@ kid_data2 = {
     '3':{
         '1':{
             'name': '仙人掌',
-            'desciption':
+            'description':
             '外星人你来地球的目的是什么！！'
         },
         '2':{
             'name': '墓碑',
-            'desciption':
+            'description':
             'R.I.P'
         },
         '3':{
             'name': 'seeker',
-            'desciption':
+            'description':
             'seeker和新浪微博长得几乎一模一样，现在已经基本没有人知道它的本名了，都叫它新浪。',
             'gif': True
         },
         '4':{
             'name': '以撒kid',
-            'desciption':
+            'description':
             '这大概是与他妈接触最多的kid，但他妈比他爹还狠，于是他只好以save主动（三格充能，使用后使kid死后可以在当前房间复活），被砸烂的R键饰品（无限复活kid），和里罗一样脆的情况在地下室生存。'
         },
         '5':{
             'name': '妮娜',
-            'desciption':
+            'description':
             '哈亚……你也来了吗，这回我会永远陪着你，不会分开了。'
         },
         '6':{
             'name': '妮娜-精灵',
-            'desciption':
+            'description':
             '哈亚，能和你一起战斗真的很愉快哦，能一路走到这里，真的是、谢谢你呢。'
         },
         '7':{
             'name': 'sakkakun kid',
-            'desciption':
+            'description':
             'kakkun kid的家人，每天不是被救就是在被救的路上，像极了若干年前的苏轼和苏辙。'
         },
         '8':{
             'name': 'wum kid',
-            'desciption':
+            'description':
             '在抓kid流行之前人们其实还抓过大量wum，后来就只剩下这种既是wum又是kid的生物了'
         },
         '9':{
             'name': '提取器kid',
-            'desciption':
+            'description':
             '提取器kid不是kid提取器，提取它的时候不要写错了，无限的kid提取器是不可能的'
         },
         '10':{
             'name': '幽灵涂鸦',
-            'desciption':
+            'description':
             '请你获得幸福！！'
         },
         '11':{
             'name': 'hd kid',
-            'desciption':
+            'description':
             '画质提升了！'
         }
     },
