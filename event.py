@@ -1,5 +1,6 @@
 import datetime
 import json
+import random
 from pathlib import Path
 #事件系统
 #在道具使用和普通的抓kid中会触发
@@ -33,14 +34,18 @@ async def ForestStuck(user_data, user_id, message):
     
     #迷路事件
     if(lost==1):
-        #困在森林里八小时，在此期间什么都干不了
-        current_time = datetime.datetime.now()
-        next_time = current_time + datetime.timedelta(minutes=480)
-        user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
-        user_data[user_id]['buff'] = 'lost'
-        #写入主数据表
-        with open(user_path, 'w', encoding='utf-8') as f:
-            json.dump(user_data, f, indent=4)
-        #发送消息
-        await message.finish("你在森林里迷路了，不知道何时才能走出去.....", at_sender=True)
+        rnd = random.randint(1,10)
+        if(rnd <= 2):
+            return
+        else:
+            #困在森林里八小时，在此期间什么都干不了
+            current_time = datetime.datetime.now()
+            next_time = current_time + datetime.timedelta(minutes=480)
+            user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
+            user_data[user_id]['buff'] = 'lost'
+            #写入主数据表
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            #发送消息
+            await message.finish("你在森林里迷路了，不知道何时才能走出去.....(请在你觉得可能找到路的时候使用zhuakid指令)", at_sender=True)
 

@@ -185,9 +185,6 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         current_time = datetime.datetime.now()  #读取当前系统时间
         if (str(user_id) in data):
 
-            #一些啥都干不了的buff
-            if(data[str(user_id)].get('buff')=='lost'): return
-
             #读取信息
             next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
             #如果受伤了则无法抓
@@ -197,6 +194,13 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                     await daoju.finish(f"你受伤了，需要等{time_text(delta_time)}才能抓")
                 else:
                     data[str(user_id)]["buff"] = "normal"
+
+            if(data[str(user_id)].get("buff")=="lost"): 
+                if(current_time >= next_time_r):
+                    data[str(user_id)]["buff"] = "normal"
+                    await catch.finish("恭喜你找到了回家的路....", at_sender=True)
+                else:
+                    return
             
             #正常抓的逻辑
             if(current_time < next_time_r):
@@ -1046,20 +1050,20 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
         #如果赌的不是一号猎场就打开副数据表
         data2 = {}
-        if(nums[5]!='1'):
-            with open(user_path / f"UserList{nums[5]}.json", 'r', encoding='utf-8') as f:
+        if(nums[2]!='1'):
+            with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
         #加入赌场
         if(nums!=0):
             if(not str(group) in data_du):
                 data_du[str(group)] = {}
-                data_du[str(group)]['lc'] = nums[5]
+                data_du[str(group)]['lc'] = nums[2]
                 data_du[str(group)]['person'] = 0
                 data_du[str(group)]['member'] = []
                 data_du[str(group)]['want'] = []
             else:
-                if(nums[5]!=data_du[str(group)]['lc']):
+                if(nums[2]!=data_du[str(group)]['lc']):
                     await dubo.finish("当前局du不了这个kid", at_sender=True)
 
             if(not user_id in data_du[str(group)]['member']):
@@ -1083,7 +1087,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                     point.append(random.randint(10000, 20000))
 
                 #如果不是一猎场就对副数据表进行修改
-                if(nums[5]!='1'): data = data2
+                if(nums[2]!='1'): data = data2
 
                 #根据点数大小来决定数据交换
                 for i in range(person_num):
