@@ -1016,12 +1016,24 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             await dubo.finish(f"你的{want_kid}数量已经达到上限了！", at_sender=True)
 
         nums = find_kid(want_kid)
+
+        #如果赌的不是一号猎场就打开副数据表
+        data2 = {}
+        if(nums[5]!='1'):
+            with open(user_path / f"UserList{nums[5]}.json", 'r', encoding='utf-8') as f:
+                data2 = json.load(f)
+
+        #加入赌场
         if(nums!=0):
             if(not str(group) in data_du):
                 data_du[str(group)] = {}
+                data_du[str(group)]['lc'] = nums[5]
                 data_du[str(group)]['person'] = 0
                 data_du[str(group)]['member'] = []
                 data_du[str(group)]['want'] = []
+            else:
+                if(nums[5]!=data_du[str(group)]['lc']):
+                    await dubo.finish("当前局du不了这个kid", at_sender=True)
 
             if(not user_id in data_du[str(group)]['member']):
 
@@ -1042,7 +1054,10 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 #给出5个点数
                 for i in range(person_num):
                     point.append(random.randint(10000, 20000))
-                
+
+                #如果不是一猎场就对副数据表进行修改
+                if(nums[5]!='1'): data = data2
+
                 #根据点数大小来决定数据交换
                 for i in range(person_num):
                     success = False
@@ -1089,15 +1104,11 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
             else:
 
-                #更新用户数据文件
-                with open(user_path / file_name, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=4)
-
                 #写入文件
                 with open(duchang_list, 'w', encoding='utf-8') as f:
                     json.dump(data_du, f, indent=4)
 
-                await dubo.finish(f"成功进入该局！当前共{str(data_du[str(group)]['person'])}人。", at_sender=True)
+                await dubo.finish(f"成功进入该局！当前共{data_du[str(group)]['person']}人，本局du池为猎场{data_du[str(group)]['lc']}", at_sender=True)
 
 
     else:
