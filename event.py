@@ -30,13 +30,14 @@ async def ForestStuck(user_data, user_id, message):
     stuckdata = {}
     with open(forest_path, 'r', encoding='utf-8') as f:
         stuckdata = json.load(f)
-    del stuckdata[user_id]
+    if(user_id in stuckdata):
+        del stuckdata[user_id]
 
     #迷路
     lost = 1
 
     #是否拥有指南针道具
-    if('item' in user_data):
+    if('item' in user_data[user_id]):
         if(user_data[user_id]['item'].get('指南针',0) > 0):
             lost = 0
     
@@ -66,9 +67,11 @@ async def ForestStuck(user_data, user_id, message):
         ######其他事件#####
         rnd = random.randint(1,100)
         #遇到被困人员
-        if(rnd <= 20 and len(stuckdata) > 0):
+        if(rnd <= 20 and len(stuckdata) >= 1):
             save_id = random.choice(list(stuckdata.keys()))
             user_data[save_id]['buff'] = 'normal'
+            user_data[save_id]['spike'] += 25
+            user_data[save_id]['next_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")   #将下次的时间重置成当前
             del stuckdata[save_id]
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
