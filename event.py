@@ -70,7 +70,7 @@ async def ForestStuck(user_data, user_id, message):
         if(rnd <= 20 and len(stuckdata) >= 1):
             save_id = random.choice(list(stuckdata.keys()))
             user_data[save_id]['buff'] = 'normal'
-            user_data[save_id]['spike'] += 25
+            user_data[user_id]['spike'] += 25
             user_data[save_id]['next_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")   #将下次的时间重置成当前
             del stuckdata[save_id]
             #写入主数据表
@@ -81,7 +81,7 @@ async def ForestStuck(user_data, user_id, message):
                 json.dump(stuckdata, f, indent=4)
 
             #发送消息
-            await message.finish("恭喜你救出了森林里的"+MessageSegment.at(save_id), at_sender=True)
+            await message.finish("恭喜你救出了森林里的"+MessageSegment.at(save_id)+"\n本次奖励25刺儿", at_sender=True)
 
         if(rnd<=40):
             #受伤一小时，在此期间什么都干不了
