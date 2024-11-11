@@ -19,8 +19,8 @@ import time
 #加载数学算法相关
 import random
 #加载KID档案信息
-from .config import kid_name_list, kid_data
-from .list2 import kid_name_list2, kid_data2
+from .config import kid_name_list
+from .list2 import kid_name_list2
 #加载商店信息和商店交互
 from .shop import item, today_item
 #加载剧情和NPC档案
@@ -1089,8 +1089,14 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
             data_du[str(group)]['person'] += 1   #加入一人
             data_du[str(group)]['member'].append(user_id)
-            data_du[str(group)]['want'].append(want_kid)
+
+            if(nums[2]=='1'):
+                data_du[str(group)]['want'].append(want_kid)
+            else:
+                data_du[str(group)]['want'].append(nums[0]+'_'+nums[1])
+
             data[str(user_id)]['spike'] -= 20
+            
         else:
             await dubo.finish("你已经加入该局啦！", at_sender=True)
 
@@ -1107,29 +1113,29 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
             #根据点数大小来决定数据交换
             for i in range(person_num):
-                success = False
                 self_id = data_du[str(group)]['member'][i]
                 for j in range(person_num):
                     if(point[j]<point[i]):
+                        #查询输家的ID
                         other_id = data_du[str(group)]['member'][j]
-                        for k, v in data[str(other_id)].items():
-                            k = k.lower()
-                            if(k == data_du[str(group)]['want'][i] and v >= 1):
-                                #对手减少kid
-                                data[str(other_id)][k] -= 1
-                                #你增加kid
-                                if(not k in data[str(self_id)]): data[str(self_id)][k] = 0
-                                data[str(self_id)][k] += 1
-                                #增加消息段
-                                msg += MessageSegment.at(self_id)
-                                msg += "获得了"
-                                msg += MessageSegment.at(other_id)
-                                msg += f"的{k}一个\n"
+                        #查询赢家想要的kid
+                        k = data_du[str(group)]['want'][i]
 
-                                success = True
-                                break  #结束该循环
-                        
-                        if(success==True): break
+                        #若有则进行分配
+                        if(data[str(other_id)].get(k,0) > 0):
+                            #对手减少kid
+                            data[str(other_id)][k] -= 1
+                            #你增加kid
+                            if(not k in data[str(self_id)]): data[str(self_id)][k] = 0
+                            data[str(self_id)][k] += 1
+                            #增加消息段
+                            msg += MessageSegment.at(self_id)
+                            msg += "获得了"
+                            msg += MessageSegment.at(other_id)
+                            msg += f"的{k}一个\n"
+
+                            break  #结束该循环
+
         
             #写入文件
             del data_du[str(group)]
