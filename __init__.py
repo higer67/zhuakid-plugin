@@ -19,8 +19,8 @@ import time
 #加载数学算法相关
 import random
 #加载KID档案信息
-from .config import kid_name_list
-from .list2 import kid_name_list2
+from .config import kid_name_list, kid_data
+from .list2 import kid_name_list2, kid_data2
 #加载商店信息和商店交互
 from .shop import item, today_item
 #加载剧情和NPC档案
@@ -1132,6 +1132,9 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                             msg += MessageSegment.at(self_id)
                             msg += "获得了"
                             msg += MessageSegment.at(other_id)
+                            if(nums[2]!='1'):
+                                k = k.split('_')
+                                k = eval(f"kid_data{nums[2]}.get(k[0]).get(k[1])")
                             msg += f"的{k}一个\n"
 
                             break  #结束该循环
