@@ -198,6 +198,11 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             if(data[str(user_id)].get("buff")=="lost"): 
                 if(current_time >= next_time_r):
                     data[str(user_id)]["buff"] = "normal"
+
+                    #写入主数据表
+                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+
                     await catch.finish("恭喜你找到了回家的路....", at_sender=True)
                 else:
                     return
@@ -910,6 +915,7 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                         if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
                             data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
                     else:
+                        new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data2[str(user_id)] = {}
                         data2[str(user_id)][str(level)+'_'+str(num)] = 1               
 
@@ -1132,8 +1138,12 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 json.dump(data_du, f, indent=4)
 
             #更新用户数据文件
-            with open(user_path / file_name, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4)
+            if(nums[2]=='1'):
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+            else:
+                with open(user_path / f"UserList{nums[2]}.json", 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)               
 
             #发送消息
             await dubo.send("正在结算本场赌局.....")  #加载消息
