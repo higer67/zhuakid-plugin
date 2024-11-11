@@ -29,7 +29,7 @@ from .story import npc_da
 from .secret import secret_list
 #加载抓kid相关的函数
 from .function import *
-from .event import event_happen
+from .event import event_happen, outofdanger
 
 ########数据信息#######
 
@@ -195,17 +195,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                 else:
                     data[str(user_id)]["buff"] = "normal"
 
-            if(data[str(user_id)].get("buff")=="lost"): 
-                if(current_time >= next_time_r):
-                    data[str(user_id)]["buff"] = "normal"
-
-                    #写入主数据表
-                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, indent=4)
-
-                    await catch.finish("恭喜你成功脱险....", at_sender=True)
-                else:
-                    return
+            await outofdanger(data,str(user_id),catch,current_time,next_time_r)
             
             #正常抓的逻辑
             if(current_time < next_time_r):
@@ -587,7 +577,6 @@ async def zhuajd(bot: Bot, event: Event):
         if(str(user_id) in data2):
             for k in data2[str(user_id)].keys():
                 level = k[0]
-                logger.info(f"{level}等级")
                 count[int(level)-1] += 1
                 jindu += int(level)
 
@@ -1049,10 +1038,6 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
         want_kid = str(arg).lower()
 
-        #超出上限不能du
-        if(data[str(user_id)].get(want_kid, 0) > 20):
-            await dubo.finish(f"你的{want_kid}数量已经达到上限了！", at_sender=True)
-
         nums = find_kid(want_kid)
 
         if(nums==0): return
@@ -1068,8 +1053,17 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
+            #没有开通二猎场
             if(not str(user_id) in data2):
                 await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
+
+            #超出上限不能du
+            if(data2[str(user_id)].get(want_kid, 0) > 20):
+                await dubo.finish(f"你的该kid数量已经达到上限了！", at_sender=True)
+        else:
+            #超出上限不能du
+            if(data[str(user_id)].get(want_kid, 0) > 20):
+                await dubo.finish(f"你的{want_kid}数量已经达到上限了！", at_sender=True)
 
         #加入赌场
         if(not str(group) in data_du):
@@ -1134,7 +1128,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                             msg += MessageSegment.at(other_id)
                             if(nums[2]!='1'):
                                 k = k.split('_')
-                                k = eval(f"kid_data{nums[2]}.get(k[0]).get(k[1])")
+                                k = eval(f"kid_data{nums[2]}.get(k[0]).get(k[1]).get('name')")
                             msg += f"的{k}一个\n"
 
                             break  #结束该循环
@@ -1163,6 +1157,10 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             await dubo.finish(msg)
 
         else:
+
+            #写入用户主文件
+            with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
 
             #写入文件
             with open(duchang_list, 'w', encoding='utf-8') as f:
