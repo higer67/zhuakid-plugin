@@ -1143,7 +1143,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                     json.dump(data, f, indent=4)
             else:
                 with open(user_path / f"UserList{nums[2]}.json", 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=4)               
+                    json.dump(data, f, indent=4)             
 
             #发送消息
             await dubo.send("正在结算本场赌局.....")  #加载消息
