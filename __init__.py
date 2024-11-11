@@ -191,10 +191,11 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             if(data[str(user_id)].get("buff")=="hurt"): 
                 if(current_time < next_time_r):
                     delta_time = next_time_r - current_time
-                    await daoju.finish(f"你受伤了，需要等{time_text(delta_time)}才能抓")
+                    await catch.finish(f"你受伤了，需要等{time_text(delta_time)}才能抓")
                 else:
                     data[str(user_id)]["buff"] = "normal"
 
+            #迷路脱险事件
             await outofdanger(data,str(user_id),catch,current_time,next_time_r)
             
             #正常抓的逻辑
@@ -468,6 +469,8 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
 
                 #发送图片
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
+            else:
+                await zs.finish(f"你还没抓到过{name}", at_sender=True)
         else:
             if(str(user_id) in data2):
                 if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):

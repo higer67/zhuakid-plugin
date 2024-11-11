@@ -11,6 +11,8 @@ forest_path = Path() / "data" / "UserList" / "Forest.json"
 
 #脱险事件
 async def outofdanger(data, user_id, message, current_time, next_time_r):
+
+    #迷路脱险事件
     if(data[user_id].get("buff")=="lost"):
         #打开森林被困名单
         stuckdata = {}
