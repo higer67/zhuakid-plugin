@@ -203,7 +203,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                     with open(user_path / file_name, 'w', encoding='utf-8') as f:
                         json.dump(data, f, indent=4)
 
-                    await catch.finish("恭喜你找到了回家的路....", at_sender=True)
+                    await catch.finish("恭喜你成功脱险....", at_sender=True)
                 else:
                     return
             
@@ -1096,7 +1096,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 data_du[str(group)]['want'].append(nums[0]+'_'+nums[1])
 
             data[str(user_id)]['spike'] -= 20
-            
+
         else:
             await dubo.finish("你已经加入该局啦！", at_sender=True)
 
