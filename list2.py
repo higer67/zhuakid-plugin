@@ -1,3 +1,14 @@
+__all__ = [
+    'rabbit kid2',
+    'kid_name_list2',
+    'kid_data2'
+]
+
+rabbit_kid2 = [
+    [5, 3],
+    [4, 1]
+]
+
 kid_name_list2 = {
     '1':[
         '马赛克kid',

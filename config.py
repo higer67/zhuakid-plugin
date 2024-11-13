@@ -1,3 +1,22 @@
+__all__ = [
+    'rabbit_kid',
+    'kid_name_list',
+    'kid_data'
+]
+
+#一号猎场兔类Kid集合
+rabbit_kid = [
+    [5, 5],   #伊维
+    [4, 13],  #垃姬兔
+    [4, 11],  #疾旋鼬
+    [3, 17],   #兔子kid
+    #rabiribi里的一系列人物
+    [4, 15],
+    [4, 16],
+    [4, 17],
+    [5, 13]
+]
+
 #kid名字集合表
 kid_name_list = {
     '1':

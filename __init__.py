@@ -19,8 +19,8 @@ import time
 #加载数学算法相关
 import random
 #加载KID档案信息
-from .config import kid_name_list, kid_data
-from .list2 import kid_name_list2, kid_data2
+from .config import *
+from .list2 import *
 #加载商店信息和商店交互
 from .shop import item, today_item
 #加载剧情和NPC档案
@@ -750,7 +750,7 @@ async def buy_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
 #使用道具，整个抓Kid里最繁琐的函数，且会持续更新
 daoju = on_command('use', permission=GROUP, priority=1, block=True)
 @daoju.handle()
-async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
+async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
     #打开文件
     data = {}
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
@@ -786,28 +786,15 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                     也有20%概率正常规则抓取，是抓伊维的利器
                     """
 
-                    #一号猎场兔类Kid集合
-                    rabbit_kid = [
-                        [5, 5],   #伊维
-                        [4, 13],  #垃姬兔
-                        [4, 11],  #疾旋鼬
-                        [3, 17],   #兔子kid
-                        #rabiribi里的一系列人物
-                        [4, 15],
-                        [4, 16],
-                        [4, 17],
-                        [5, 13]
-                        ]
-
                     #随机选择是正常抓取还是从兔类Kid里抓
                     rnd = random.randint(1,10)
                     if(rnd <= 8):
                         #二号猎场还没有兔类kid
-                        if(data[str(user_id)]['lc']=='2'):
-                            await daoju.finish("当前猎场目前还没有兔类kid")
+                        liechang_number = data[str(user_id)]['lc']
                         #从兔类里抓
-                        rabbit_rnd = random.randint(0, len(rabbit_kid)-1)  #随机选择一个
-                        information = print_zhua(rabbit_kid[rabbit_rnd][0], rabbit_kid[rabbit_rnd][1], '1')
+                        rabbit = eval(f"rabbit_data{liechang_number}")
+                        rabbit_rnd = random.randint(0, len(rabbit)-1)  #随机选择一个
+                        information = print_zhua(rabbit[rabbit_rnd][0], rabbit[rabbit_rnd][1], liechang_number)
                         success = 1
                     else:
                         #正常抓取
@@ -833,6 +820,53 @@ async def daoju_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                     success = 1
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+            if(use_item_name=="赌徒之眼"):
+                """
+                在进du局前使用这个道具可以查看该局是否有人想狙你的某个kid
+                """
+
+                #没有这个道具
+                if(data[str(user_id)].get("item").get(use_item_name, 0) == 0):
+                    await daoju.finish(f"你现在没有{use_item_name}")
+
+                #先查看当前为哪个赌场
+                data_du = {}
+                with open(duchang_list, 'r', encoding='utf-8') as f:
+                    data_du = json.load(f)
+    
+                group = event.group_id
+                if(not str(group) in data_du):
+                    await daoju.finish("当前还没有du局哦~~~", at_sender=True)
+
+                liechang_number = data_du[str(group)]['lc']
+
+                #是否已经在du局中
+                if(str(user_id) in data_du[str(group)]['member']):
+                    await daoju.finish("你脑子是不是坏掉了，这个道具不应该在进du场前用吗？", at_sender=True)
+
+                #消耗道具
+                data[str(user_id)]['item']['赌徒之眼'] -= 1
+                if(data[str(user_id)]['item']['赌徒之眼']==0):
+                    del data[str(user_id)]['item']['赌徒之眼']
+                #写入文件
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+
+                if(liechang_number=='1'):
+                    for k in data_du[str(group)]['want']:
+                        if(k in data[str(user_id)]):
+                            await daoju.finish(f"你的{k}面临被掠夺的风险.....", at_sender=True)
+                    await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)
+                else:
+                    data2 = {}
+                    with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
+                        data2 = json.load(f)
+                    for k in data_du[str(group)]['want']:
+                        if(k in data[str(user_id)]):
+                            name = eval(f"kid_data{nums[2]}.get(k[0]).get(k[1]).get('name')")
+                            await daoju.finish(f"你的{name}面临被掠夺的风险.....", at_sender=True)
+                    await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)                 
+
             #两个参数的指令
             command = use_item_name.split("/")
             if(len(command)==2):
@@ -1061,7 +1095,7 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
 
             #超出上限不能du
-            if(data2[str(user_id)].get(want_kid, 0) > 20):
+            if(data2[str(user_id)].get(want_kid, 0) >= 20):
                 await dubo.finish(f"你的该kid数量已经达到上限了！", at_sender=True)
         else:
             #超出上限不能du
