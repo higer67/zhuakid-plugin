@@ -792,7 +792,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         #二号猎场还没有兔类kid
                         liechang_number = data[str(user_id)]['lc']
                         #从兔类里抓
-                        rabbit = eval(f"rabbit_data{liechang_number}")
+                        rabbit = eval(f"rabbit_kid{liechang_number}")
                         rabbit_rnd = random.randint(0, len(rabbit)-1)  #随机选择一个
                         information = print_zhua(rabbit[rabbit_rnd][0], rabbit[rabbit_rnd][1], liechang_number)
                         success = 1
