@@ -858,7 +858,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     with open(user_path / f"UserList{liechang_number}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
                     for k in data_du[str(group)]['want']:
-                        if(k in data2[str(user_id)]):
+                        if(data2[str(user_id)].get(k,0)>0):
                             k = k.split('_')
                             name = eval(f"kid_data{liechang_number}.get(k[0]).get(k[1]).get('name')")
                             await daoju.finish(f"你的{name}面临被掠夺的风险.....", at_sender=True)
