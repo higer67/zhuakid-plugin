@@ -844,10 +844,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 if(str(user_id) in data_du[str(group)]['member']):
                     await daoju.finish("你脑子是不是坏掉了，这个道具不应该在进du场前用吗？", at_sender=True)
 
-                #消耗道具
-                data[str(user_id)]['item']['赌徒之眼'] -= 1
-                if(data[str(user_id)]['item']['赌徒之眼']==0):
-                    del data[str(user_id)]['item']['赌徒之眼']
                 #写入文件
                 with open(user_path / file_name, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -859,11 +855,12 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)
                 else:
                     data2 = {}
-                    with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
+                    with open(user_path / f"UserList{liechang_number}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
                     for k in data_du[str(group)]['want']:
-                        if(k in data[str(user_id)]):
-                            name = eval(f"kid_data{nums[2]}.get(k[0]).get(k[1]).get('name')")
+                        if(k in data2[str(user_id)]):
+                            k = k.split('_')
+                            name = eval(f"kid_data{liechang_number}.get(k[0]).get(k[1]).get('name')")
                             await daoju.finish(f"你的{name}面临被掠夺的风险.....", at_sender=True)
                     await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)                 
 
