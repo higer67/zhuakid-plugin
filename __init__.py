@@ -80,8 +80,8 @@ async def zhua_help():
 gong_gao = on_fullmatch('公告', permission=GROUP, priority=1, block=True)
 @gong_gao.handle()
 async def gong_gao_handle():
-    text = "白墨棋牌室正式开张了！！\n“只是看到团长来了我也就跟来了说，他应该不会斥责我做不正经生意吧。”\n刮刮乐一张150刺儿\n五人夺Kid局一人20刺儿\n由于客流量较大，结算需要时间，请客人耐心排队\n营业时间：正日18:00--次日6:00\n（顺便提醒一下，荷官为了做生意不会提醒你刺儿快不够的，请留意自己的余额）"
-    await gong_gao.finish(text + MessageSegment.image(duchang_open_img))
+    text = "“中央广场传来一声巨响，发生什么事情了？旅行者去看看吧！”Roris说到。\n回小镇的路上远远就能看到中央广场那有一束直冲云霄的黑柱.....\n嗯...看来，远古kid的灵魂被激活了。中央广场浮着一团黑色旋涡。“Roris！解释一下啊！”\n“这么多年了，kid祖先所在之地封印终于被解除了，旅行者，你也许能回家了哦~~不过现在还没有进入这个最终猎场的条件呢，一旦你真的进入了，或许就真能回到原先的世界了！”\n“真的？啊这不是一个长线运营的休闲游戏吗，原来真的有会完结的主线啊！”\n嗯呐，可路还很长~旅行者继续加油zhuakid吧！"        
+    await gong_gao.finish(text)
 
 #NPC档案
 npc = on_command('npc', permission=GROUP, priority=1, block=True)
