@@ -449,6 +449,7 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
     user_id = event.get_user_id()
     #查找该名字的Kid的图像文件坐标
     nums = find_kid(name)
+    if(nums==0): return
     #打开应该查询的表
     data2 = {}
     if(nums[2]!='1'):
