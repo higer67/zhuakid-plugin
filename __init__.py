@@ -127,7 +127,7 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
 cklc = on_fullmatch('cklc', permission=GROUP, priority=1, block=True)
 @cklc.handle()
 async def cklc_handle():
-    text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2"
+    text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2\n\n？号猎场：虚数空间\n危险等级：5"
     await cklc.finish(text)
 
 #切换猎场
