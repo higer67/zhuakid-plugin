@@ -10,7 +10,6 @@ from .list2 import kid_data2
 user_path = Path() / "data" / "UserList"
 file_name = "UserData.json"
 
-#查看Kid进度
 #查看kid库存
 mykid = on_fullmatch('mykid lc1', permission=GROUP, priority=1, block=True)
 @mykid.handle()
