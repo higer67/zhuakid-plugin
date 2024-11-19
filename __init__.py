@@ -49,7 +49,7 @@ shop_open_img = Path() / "data" / "Shop" / "开张图.png"
 shop_work_img = Path() / "data" / "Shop" / "营业图.png"
 
 #更新日志
-update_text = "为cp和du加入了防风控机制，自带消息延迟，在延迟内其他人发不会做出回应，同时cp消耗150刺儿，du消耗20刺儿。优化了服务器数据结构"
+update_text = "加入二号猎场的库存查看，加入两个新道具"
 #管理员ID
 bot_owner_id = "1047392286"
 
@@ -864,6 +864,22 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             name = eval(f"kid_data{liechang_number}.get(k[0]).get(k[1]).get('name')")
                             await daoju.finish(f"你的{name}面临被掠夺的风险.....", at_sender=True)
                     await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)                 
+            if(use_item_name=="时间献祭器"):
+                if(data.get(user_id).get('item').get('时间献祭器',0) > 0):
+                    next_time = get_time_from_data(data[str(user_id)])
+                    current_time = datetime.datetime.now()
+                    #没到下一次抓的时间
+                    if(current_time < next_time):
+                        text = time_text(str(next_time-current_time))
+                        await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
+                    
+                    #延长下次抓的cd并消耗
+                    next_time = current_time + datetime.timedelta(minute=60)
+                    data[str(user_id)]['item']['时间献祭器'] -= 1
+                    if(data[str(user_id)]['item']['时间献祭器']): del data[str(user_id)]['item']['时间献祭器']
+                    #zhuakid并增加爆率
+                    information = zhua_random(20,100,400,900,liechang_number=data[str(user_id)]['lc'])
+                    success = 1
 
             #两个参数的指令
             command = use_item_name.split("/")
@@ -905,7 +921,34 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 success = 2
                     else:
                         await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+                if(use_item_name.lower()=="kid献祭器"):
+                    if(data.get(user_id).get('item').get('时间献祭器',0) > 0):
+                        next_time = get_time_from_data(data[str(user_id)])
+                        current_time = datetime.datetime.now()
+                        #没到下一次抓的时间
+                        if(current_time < next_time):
+                            text = time_text(str(next_time-current_time))
+                            await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
+                        #将选中的kid清零
+                        nums = find_kid(arg)
+                        if(nums==0): return   #查不到这个kid的档案，终止
+                        if(nums[2]=='1'):
+                            #一号猎场
+                            if(data[str(user_id)].get(arg,0) > 0):
+                                data[str(user_id)][arg] = 0
+                            else:
+                                daoju.finish(f"你没有{arg}可以拿来献祭了！", at_sender=True)
+                        else:
+                            #二号猎场及其以后，按等级和编号确定
+                            level_num = nums[0]+'_'+nums[1]
+                            if(data[str(user_id)].get(level_num,0) > 0):
+                                data[str(user_id)][level_num] = 0
+                            else:
+                                daoju.finish(f"你没有{arg}可以拿来献祭了！", at_sender=True)
 
+                        #zhuakid并增加爆率
+                        
+                    
             #使用成功
             if(success==1):
                 new_print = ""

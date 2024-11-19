@@ -10,7 +10,7 @@ from .list2 import kid_data2
 user_path = Path() / "data" / "UserList"
 file_name = "UserData.json"
 
-#查看kid库存
+#查看kid库存(二猎场以后)
 mykid = on_fullmatch('mykid lc1', permission=GROUP, priority=1, block=True)
 @mykid.handle()
 async def mykid_handle(bot: Bot, event: GroupMessageEvent):

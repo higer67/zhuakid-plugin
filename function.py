@@ -1,10 +1,12 @@
 from nonebot.log import logger
 from pathlib import Path
-from .config import kid_name_list, kid_data
-from .list2 import kid_name_list2, kid_data2
+from .config import *
+from .list2 import *
 from .shop import item
 import random
 import re
+import datetime
+import json
 
 __all__ = [
     'kid_path_lc1',
@@ -23,7 +25,11 @@ __all__ = [
     'decode_buy_text',
     'find_kid',
     'find_kid_single_lc',
-    'time_text'
+    'time_text',
+    'get_time_from_data',
+    'time_decode',
+    'open_data',
+    'save_data'
 ]
 
 #Kid图鉴
@@ -215,3 +221,22 @@ def time_text(delta_time):
     text += f"{a[-2]}秒"
     
     return text
+
+##频繁调用的长语句##
+#读取某用户数据中的日期信息
+def get_time_from_data(data):
+    return datetime.datetime.strptime(data.get('next_time'), "%Y-%m-%d %H:%M:%S")
+
+#将时间对象转换成可储存在用户数据中的字符串
+def time_decode(time):
+    return time.strftime("%Y-%m-%d %H:%M:%S")
+
+#打开某数据文件
+def open_data(file,data):
+    with open(file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+#保存数据结构到数据文件内
+def save_data(file,data):
+    with open(file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4)
