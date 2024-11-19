@@ -30,6 +30,7 @@ from .secret import secret_list
 #加载抓kid相关的函数
 from .function import *
 from .event import event_happen, outofdanger
+from .kidjd import *
 
 ########数据信息#######
 
@@ -875,11 +876,14 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     
                     #延长下次抓的cd并消耗
                     next_time = current_time + datetime.timedelta(minute=60)
+                    data[str(user_id)]['next_time'] = time_decode(next_time)
                     data[str(user_id)]['item']['时间献祭器'] -= 1
                     if(data[str(user_id)]['item']['时间献祭器']): del data[str(user_id)]['item']['时间献祭器']
                     #zhuakid并增加爆率
-                    information = zhua_random(20,100,400,900,liechang_number=data[str(user_id)]['lc'])
+                    information = zhua_random(50,200,500,999,liechang_number=data[str(user_id)]['lc'])
                     success = 1
+                else:
+                    await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
 
             #两个参数的指令
             command = use_item_name.split("/")
@@ -929,6 +933,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         if(current_time < next_time):
                             text = time_text(str(next_time-current_time))
                             await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
+                        #将时间更新
+                        next_time = current_time + datetime.timedelta(minute=30)
+                        data[str(user_id)]['next_time'] = time_decode(next_time)
                         #将选中的kid清零
                         nums = find_kid(arg)
                         if(nums==0): return   #查不到这个kid的档案，终止
@@ -947,7 +954,12 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 daoju.finish(f"你没有{arg}可以拿来献祭了！", at_sender=True)
 
                         #zhuakid并增加爆率
-                        
+                        information = zhua_random(10+10*int(nums[0]), 50+20*int(nums[0]), 200+40*int(nums[0]), 500+80*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
+                        success = 1
+
+                    else:
+                        await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+
                     
             #使用成功
             if(success==1):
