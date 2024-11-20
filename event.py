@@ -101,6 +101,16 @@ async def ForestStuck(user_data, user_id, message):
     else:
         ######其他事件#####
         rnd = random.randint(1,100)
+        #遇到金矿
+        if(rnd <= 3):
+            #奖励刺儿
+            spike = 500+random.randint(200)
+            user_data[user_id]['spike'] += spike
+            #写入主数据表
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            #发送消息
+            await message.finish(f"呀，你在森林里发现了一个小金矿，本次奖励{spike}刺儿！", at_sender=True)
         #遇到被困人员
         if(rnd <= 20):
             if(len(stuckdata) >= 1):
@@ -122,7 +132,7 @@ async def ForestStuck(user_data, user_id, message):
 
                 #没有需要救的人就结束事件，正常抓kid
                 return
-
+        #受伤事件
         if(rnd<=30):
             #受伤一小时，在此期间什么都干不了
             current_time = datetime.datetime.now()

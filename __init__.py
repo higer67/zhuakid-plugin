@@ -1011,11 +1011,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         data2[str(user_id)] = {}
                         data2[str(user_id)][str(level)+'_'+str(num)] = 1               
 
-                #奖励刺儿
-                spike_give = give_spike(level)
-
-                data[str(user_id)]['spike'] += spike_give
-
                 #如果道具归0则将该项置空
                 if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
 
