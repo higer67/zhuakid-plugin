@@ -961,7 +961,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             data2 = open_data(user_path/f"UserList{data[str(user_id)]['lc']}.json")
                             level_num = nums[0]+'_'+nums[1]
                             if(data2[str(user_id)].get(level_num,0) >= 1):
-                                data2[str(user_id)][level_num] = 0
+                                data2[str(user_id)][level_num] -= 1
                                 save_data(user_path/f"UserList{data[str(user_id)]['lc']}.json",data2)
                             else:
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
@@ -1027,8 +1027,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                  f'\n等级: {level}\n'+
                                 f'{name}'+
                                 MessageSegment.image(img)+
-                                f'{description}'+
-                                '\n\n本次奖励'+f'{spike_give}刺儿',
+                                f'{description}',
                                 at_sender = True)
             #使用失败
             if(success==2):
