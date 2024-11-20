@@ -1,5 +1,5 @@
 __all__ = [
-    'rabbit kid2',
+    'rabbit_kid2',
     'kid_name_list2',
     'kid_data2'
 ]

@@ -104,7 +104,7 @@ async def ForestStuck(user_data, user_id, message):
         #遇到金矿
         if(rnd <= 3):
             #奖励刺儿
-            spike = 500+random.randint(200)
+            spike = 800+random.randint(800)
             user_data[user_id]['spike'] += spike
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:

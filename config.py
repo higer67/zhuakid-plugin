@@ -1,11 +1,11 @@
 __all__ = [
-    'rabbit_kid',
+    'rabbit_kid1',
     'kid_name_list',
     'kid_data'
 ]
 
 #一号猎场兔类Kid集合
-rabbit_kid = [
+rabbit_kid1 = [
     [5, 5],   #伊维
     [4, 13],  #垃姬兔
     [4, 11],  #疾旋鼬
