@@ -508,6 +508,7 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
 
     #查找该名字的Kid的图像文件坐标
     nums = find_kid(name)
+    if(nums==0): return
     #打开应该查询的表
     data2 = {}
     if(nums[2]!='1'):
@@ -801,7 +802,8 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     else:
                         #正常抓取
                         information = zhua_random(liechang_number=data[str(user_id)]['lc'])
-                        success = 1                       
+                        success = 1
+                    data[str(user_id)]["item"][use_item_name] -= 1                      
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
             if(use_item_name=="弹弓"):
@@ -810,6 +812,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     没啥特殊的，只是额外正常地再抓一次
                     """
                     information = zhua_random(liechang_number=data[str(user_id)]['lc'])
+                    data[str(user_id)]["item"][use_item_name] -= 1
                     success = 1
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
@@ -819,6 +822,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     没啥特殊的，只是额外正常地再抓一次
                     """
                     information = zhua_random(20, 100, 500, 800, liechang_number=data[str(user_id)]['lc'])
+                    data[str(user_id)]["item"][use_item_name] -= 1
                     success = 1
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
@@ -874,11 +878,10 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         text = time_text(str(next_time-current_time))
                         await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
                     
-                    #延长下次抓的cd并消耗
-                    next_time = current_time + datetime.timedelta(minute=60)
-                    data[str(user_id)]['next_time'] = time_decode(next_time)
-                    data[str(user_id)]['item']['时间献祭器'] -= 1
-                    if(data[str(user_id)]['item']['时间献祭器']): del data[str(user_id)]['item']['时间献祭器']
+                    #延长下次抓的cd
+                    if(user_id!=bot_owner_id):
+                        next_time = current_time + datetime.timedelta(minutes=60)
+                        data[str(user_id)]['next_time'] = time_decode(next_time)
                     #zhuakid并增加爆率
                     information = zhua_random(50,200,500,999,liechang_number=data[str(user_id)]['lc'])
                     success = 1
@@ -923,10 +926,11 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 data[str(user_id)]["buff"] = "hurt"  #受伤
                                 fail_text = f"提取失败！提取器爆炸了，你受伤了，需要休息{str(cd_time)}分钟"  #失败文本
                                 success = 2
+                        data[str(user_id)]["item"][use_item_name] -= 1
                     else:
                         await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
                 if(use_item_name.lower()=="kid献祭器"):
-                    if(data.get(user_id).get('item').get('时间献祭器',0) > 0):
+                    if(data.get(user_id).get('item').get('kid献祭器',0) > 0):
                         next_time = get_time_from_data(data[str(user_id)])
                         current_time = datetime.datetime.now()
                         #没到下一次抓的时间
@@ -934,27 +938,36 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             text = time_text(str(next_time-current_time))
                             await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
                         #将时间更新
-                        next_time = current_time + datetime.timedelta(minute=30)
-                        data[str(user_id)]['next_time'] = time_decode(next_time)
+                        if(user_id!=bot_owner_id):
+                            next_time = current_time + datetime.timedelta(minutes=30)
+                            data[str(user_id)]['next_time'] = time_decode(next_time)
                         #将选中的kid清零
-                        nums = find_kid(arg)
-                        if(nums==0): return   #查不到这个kid的档案，终止
+                        nums = find_kid(arg2.lower())
+                        #查不到这个kid的档案，终止
+                        if(nums==0): 
+                            logger.info("因为不存在该kid献祭被中断")
+                            return
+                        #进行献祭
+                        if(nums[2]!=data[str(user_id)]['lc']):
+                            await daoju.finish(f"你不能献祭别的猎场的kid！", at_sender=True)
                         if(nums[2]=='1'):
                             #一号猎场
-                            if(data[str(user_id)].get(arg,0) > 0):
-                                data[str(user_id)][arg] = 0
+                            if(data[str(user_id)].get(arg2.lower(),0) >= 1):
+                                data[str(user_id)][arg2.lower()] = 0
                             else:
-                                daoju.finish(f"你没有{arg}可以拿来献祭了！", at_sender=True)
+                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
                         else:
                             #二号猎场及其以后，按等级和编号确定
+                            data2 = open_data(user_path/f"UserList{data[str(user_id)]['lc']}.json")
                             level_num = nums[0]+'_'+nums[1]
-                            if(data[str(user_id)].get(level_num,0) > 0):
-                                data[str(user_id)][level_num] = 0
+                            if(data2[str(user_id)].get(level_num,0) >= 1):
+                                data2[str(user_id)][level_num] = 0
+                                save_data(user_path/f"UserList{data[str(user_id)]['lc']}.json",data2)
                             else:
-                                daoju.finish(f"你没有{arg}可以拿来献祭了！", at_sender=True)
+                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
 
                         #zhuakid并增加爆率
-                        information = zhua_random(10+10*int(nums[0]), 50+20*int(nums[0]), 200+40*int(nums[0]), 500+80*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
+                        information = zhua_random(10*5*int(nums[0]), 50*3*int(nums[0]), 200*2*int(nums[0]), 500*1.5*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
                         success = 1
 
                     else:
@@ -1003,10 +1016,8 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
 
                 data[str(user_id)]['spike'] += spike_give
 
-                #消耗道具
-                data[str(user_id)]["item"][use_item_name] -= 1
                 #如果道具归0则将该项置空
-                if(data[str(user_id)]["item"][use_item_name]==0): del data[str(user_id)]["item"][use_item_name]
+                if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
 
                 #写入副表
                 if(lc!='1'):

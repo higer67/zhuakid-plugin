@@ -232,9 +232,11 @@ def time_decode(time):
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 #打开某数据文件
-def open_data(file,data):
+def open_data(file):
+    data = {}
     with open(file, 'r', encoding='utf-8') as f:
         data = json.load(f)
+    return data
 
 #保存数据结构到数据文件内
 def save_data(file,data):
