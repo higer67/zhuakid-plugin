@@ -20,7 +20,13 @@ kid_name_list2 = {
         '矿工kid',
         'tas player kid',
         '思考kid',
-        'po kid'
+        'po kid',
+        'nude kid',
+        ':(kid',
+        ':)kid',
+        '光头kid',
+        'big kid',
+        '小老鼠'
     ],
     '2':[
         '蓝鸟',
@@ -32,7 +38,15 @@ kid_name_list2 = {
         '吉他手kid',
         '靖尊kid',
         '天使kid',
-        '白kid'
+        '白kid',
+        '逍遥散人',
+        '灰尘精灵',
+        'sorrow kid',
+        '骑士kid',
+        '老鼠士兵',
+        'shitass',
+        '雪衣kid',
+        '骷髅kid'
     ],
     '3':[
         '仙人掌',
@@ -45,7 +59,11 @@ kid_name_list2 = {
         'wum kid',
         '提取器kid',
         '幽灵涂鸦',
-        'hd kid'
+        'hd kid',
+        '奶龙kid',
+        'theo',
+        'niko',
+        '8bit kid'
     ],
     '4':[
         'tevi',
@@ -53,12 +71,25 @@ kid_name_list2 = {
         'neuro',
         '雾雨魔理沙kid',
         '博丽灵梦kid',
-        'madeline'
+        'madeline',
+        'lucekid',
+        '山果茶',
+        '冬夜kid',
+        'ralsei',
+        '卡比',
+        '咖波',
+        '芙莉莲'
     ],
     '5':[
         'tgdr',
         '冬天豆kid',
-        'kidhole'
+        'kidhole',
+        'hina',
+        '小泽宛',
+        'lora',
+        '超天酱kid',
+        '海哥食雪',
+        'Desom-fu'
     ]
 }
 
@@ -115,6 +146,36 @@ kid_data2 = {
             'description':
             'bgjw',
             'gif': True
+        },
+        '11':{
+            'name': 'nude kid',
+            'description':
+            '轻量化'
+        },
+        '12':{
+            'name': ':(kid',
+            'description':
+            '不嘻嘻'
+        },
+        '13':{
+            'name': ':)kid',
+            'description':
+            '嘻嘻'
+        },
+        '14':{
+            'name': '光头kid',
+            'description':
+            '变秃了，也变强了'
+        },
+        '15':{
+            'name': 'big kid',
+            'description':
+            '有人说这是核污水的产物，但他的枪和衣服也是吗？'
+        },
+        '16':{
+            'name': '小老鼠',
+            'description':
+            '还没长毛就能做到直立行走的小老鼠，看来它很喜欢跳刺！'
         }
     },
     '2':{
@@ -171,6 +232,47 @@ kid_data2 = {
             'name': '白kid',
             'description':
             '不是每一只白Kid都有超能力'
+        },
+        '11':{
+            'name': '逍遥散人',
+            'description':
+            '散人干不死！！！'            
+        },
+        '12':{
+            'name': '灰尘精灵',
+            'description':
+            '我相信你一定不会想在打图的时候遇到一堆灰尘精灵的，对吧。',
+            'gif': True          
+        },
+        '13':{
+            'name': 'sorrow kid',
+            'description':
+            '他的血是黑色的'           
+        },
+        '14':{
+            'name': '骑士kid',
+            'description':
+            '在城堡里探险的kid把里面的骑士头盔给偷了出来'           
+        },
+        '15':{
+            'name': '老鼠士兵',
+            'description':
+            '以致命的刺儿作为武器，以坚固的苹果作为武装，它们就是老鼠王国的中坚力量。'           
+        },
+        '16':{
+            'name': 'shitass',
+            'description':
+            '人形ASS，单身操作。'
+        },
+        '17':{
+            'name': '雪衣kid',
+            'description':
+            '雪衣Kid的衣服十分厚实，把他的哈士奇耳朵和尾巴挡的严严实实'           
+        },
+        '18':{
+            'name': '骷髅kid',
+            'description':
+            '嘟嘟哒嘟嘟哒~\n滴 哩 哩滴哩哩呢乃~~~~'           
         }
     },
     '3':{
@@ -229,6 +331,27 @@ kid_data2 = {
             'name': 'hd kid',
             'description':
             '画质提升了！'
+        },
+        '12':{
+            'name': '奶龙kid',
+            'description': '我是奶龙，我才是奶龙，我会喷火，你会吗？我还会变色呢！'
+        },
+        '13':{
+            'name': 'theo',
+            'description':
+            '此时正在玩手机的theo一定想不到之后他会变成一块水晶……',
+            'gif': True            
+        },
+        '14':{
+            'name': 'niko',
+            'description':
+            '一只成天抱着灯泡，爱吃薄煎饼的…猫？薄煎饼很美味，但是灯泡不知道去哪了。',
+            'gif': True            
+        },
+        '15':{
+            'name': '8bit kid',
+            'description':
+            '即使到了现在 8Bit Kid 仍然忘不了他红白机上购买的那些 FC 游戏',            
         }
     },
     '4':{
@@ -265,6 +388,45 @@ kid_data2 = {
             'description':
             'Madeline从山顶上摘下来的这颗草莓意外的非常有弹性，于是她把这颗草莓当做了弹跳杆使用',
             'gif': True
+        },
+        '7':{
+            'name': 'lucekid',
+            'description':
+            '只是一只穿着雨衣并且信奉基督教的蓝发牧羊人Kid恰好在猎场里放羊罢了(',
+        },
+        '8':{
+            'name': '山果茶',
+            'description':
+            '这不是早期还没变身成初音的tgdr！这不是早期还没变身成初音的tgdr！！这不是早期还没变身成初音的tgdr！！！不过有一点是肯定的，tgdr特别喜欢喝的饮料就是水果茶。',
+        },
+        '9':{
+            'name': '冬夜kid',
+            'description':
+            '冬天的雪好像永远都不会停。\n我用冻僵的手指再雪地上书写你的名字。\n\n别回头，披好围巾，我们要穿越冬夜了……'
+        },
+        '10':{
+            'name': 'ralsei',
+            'description':
+            '欢迎，我是这个王国的王子…这里是黑暗王国。',
+            'gif': True            
+        },
+        '11':{
+            'name': '卡比',
+            'description':
+            '粉色的球体，有着小短手和红色的小脚。蓝色眼睛，视力不错，有脸颊。身高20cm，但在游戏里至少有半个人这么高。富有弹性。',
+            'gif': True            
+        },
+        '12':{
+            'name': '咖波',
+            'description':
+            '你不龙，我不龙，大家都发猫猫虫~',
+            'gif': True            
+        },
+        '13':{
+            'name': '芙莉莲',
+            'description':
+            '诶又有个宝箱，不行，就算是宝箱怪我也要去看看……哇啊！好黑好可怕！快放我出去！',
+            'gif': True            
         }
     },
     '5':{
@@ -276,13 +438,44 @@ kid_data2 = {
         '2':{
             'name': '冬天豆kid',
             'description':
-            'Season Studios的冬装靓仔版KID，限定出场！'         
+            'Season Studios的冬装靓仔版KID，限定出场！'   
         },
         '3':{
             'name': 'kidhole',
             'description':
             '这是在kid下海前，我们在他电脑里面发现的最后一张图',
             'gif': True      
-        }
+        },
+        '4':{
+            'name': 'hina',
+            'description':
+            '/hina 你和斯卡蒂有什么关系？ \nHina：Hina和斯卡蒂是好朋友哦～虽然Hina是个AI助手，但大家都喜欢她，因为她很强而且很可爱呢！斯卡蒂也超厉害的！她是那种超酷的角色，总是能保护大家～不过Hina是Hina，斯卡蒂是斯卡蒂，都是独立的存在啦~嘿嘿~'     
+        },
+        '5':{
+            'name': '小泽宛',
+            'description':
+            '她声称自己的形象是借用来的。她还说，是因为这游戏作者只允许用像素形象，她才变成这样子。'     
+        },
+        '6':{
+            'name': 'lora',
+            'description':
+            'lora其实有很多分身，不知道你抓的这只是几号呢？'    
+        },
+        '7':{
+            'name': '超天酱kid',
+            'description':
+            '超超超超超超超超超超超超超超超超超超超超超绝最可爱Kid酱提醒你：\n不可以涩涩！'    
+        },
+        '8':{
+            'name': '海哥食雪',
+            'description':
+            '海哥在还是鸽子作者的时候，最喜欢做的事情就是品鉴国产坑向大份，无论做的有多抽象，他总是吃的不亦乐乎，直播间的人也感到乐趣无穷。著名直播鉴赏家Xwan泽宛评价道：如果没有海哥的直播，那些大份就会石沉大海，无法给观众带来欢乐。在海哥成为没玻璃之后，后人画下《海哥食雪图》以纪念曾经的美好瞬间。'    
+        },
+        '9':{
+            'name': 'Desom-fu',
+            'description':
+            'Desom-fu这只狐娘由于太喜欢Celeste了，在一次奥欻的过程中一不小心把自己给奥进去了，导致自己也变成了蔚蓝的画风。据传言，她好像跑到了山的隐藏起来的d面，正在努力拿传说中7d的金草莓。听说她闲暇之余还开了一家zhuakid黑市，有时间可以去逛逛，可能会打开崭新的大门哦！',
+            'gif': True      
+        }      
     }
 }
