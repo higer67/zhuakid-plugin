@@ -263,7 +263,6 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             if(not name in data[str(user_id)]):
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data[str(user_id)][name] = 0
-            if(data[str(user_id)][name] < 20):
                 data[str(user_id)][name] += 1  #数量+1
         else:
             if(str(user_id) in data2):
@@ -1004,7 +1003,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                             new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                             data2[str(user_id)][str(level)+'_'+str(num)] = 0
-                        if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
                             data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
                     else:
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
@@ -1151,14 +1149,6 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             #没有开通二猎场
             if(not str(user_id) in data2):
                 await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
-
-            #超出上限不能du
-            if(data2[str(user_id)].get(want_kid, 0) >= 20):
-                await dubo.finish(f"你的该kid数量已经达到上限了！", at_sender=True)
-        else:
-            #超出上限不能du
-            if(data[str(user_id)].get(want_kid, 0) > 20):
-                await dubo.finish(f"你的{want_kid}数量已经达到上限了！", at_sender=True)
 
         #加入赌场
         if(not str(group) in data_du):
