@@ -50,7 +50,7 @@ shop_open_img = Path() / "data" / "Shop" / "开张图.png"
 shop_work_img = Path() / "data" / "Shop" / "营业图.png"
 
 #更新日志
-update_text = "加入二号猎场的库存查看，加入两个新道具"
+update_text = "整改一些事情啊。"
 #管理员ID
 bot_owner_id = "1047392286"
 
@@ -953,7 +953,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         if(nums[2]=='1'):
                             #一号猎场
                             if(data[str(user_id)].get(arg2.lower(),0) >= 1):
-                                data[str(user_id)][arg2.lower()] = 0
+                                data[str(user_id)][arg2.lower()] -= 1
                             else:
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
                         else:
@@ -967,7 +967,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
 
                         #zhuakid并增加爆率
-                        information = zhua_random(10*5*int(nums[0]), 50*3*int(nums[0]), 200*2*int(nums[0]), 500*1.5*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
+                        information = zhua_random(10*2*int(nums[0]), 50*1.5*int(nums[0]), 200*1.2*int(nums[0]), 500*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
                         success = 1
 
                     else:
