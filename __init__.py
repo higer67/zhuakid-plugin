@@ -29,8 +29,9 @@ from .story import npc_da
 from .secret import secret_list
 #加载抓kid相关的函数
 from .function import *
-from .event import event_happen, outofdanger
+from .event import event_happen, outofdanger, kid_pvp_event
 from .kidjd import *
+from .pvp import *
 
 ########数据信息#######
 
@@ -131,6 +132,13 @@ async def cklc_handle():
     text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2\n\n？号猎场：虚数空间\n危险等级：5"
     await cklc.finish(text)
 
+#竞技场细则
+pvpck = on_fullmatch('0场细则', permission=GROUP, priority=1, block=True)
+@pvpck.handle()
+async def pvpck_handle():
+    text = "有关0号猎场细则：\n\n在本猎场，zhuakid将会从自己的收集池里抓取。竞技场内共十个位置，抓取完后系统会自动放上十个位置中的某一个，但是如果该位置被占用了，就会发生一次PK来决定谁使用这个位置，一段时间后十个位置上留下的人将会被发放500刺儿奖励，并重新开始。目前处于试用阶段，但没任何的debuff，可大胆测试！"
+    await pvpck.finish(text)
+
 #切换猎场
 qhlc = on_command('qhlc', permission=GROUP, priority=1, block=True)
 @qhlc.handle()
@@ -143,6 +151,25 @@ async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
     user_id = str(event.user_id)
     number = str(arg)     #猎场编号
     if(user_id in data):
+        #特殊的竞技猎场
+        if(number=='0'):
+
+            #一些啥都干不了的buff
+            if(data[user_id].get('buff')=='lost'): return
+
+            #原本就在这个猎场
+            if('lc' in data[user_id]):
+                if(data[user_id]['lc']==number):
+                    await qhlc.finish("你现在就在这个猎场呀~", at_sender=True)
+
+            #改变lc值
+            data[user_id]['lc'] = number
+            #写入文件
+            with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4)
+            await qhlc.send(f"已经成功切换到0号猎场！有关0号猎场的细则请输入[0场细则]查看！", at_sender=True)
+     
+        #正常的收集型猎场
         if(number in ['1','2']):
 
             #一些啥都干不了的buff
@@ -231,6 +258,12 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         if(not 'lc' in data[str(user_id)]):
             data[str(user_id)]['lc'] = '1'
 
+        #特殊猎场kid竞技场内事件
+        if(data[str(user_id)]['lc']=='0'):
+            await kid_pvp_event(data,str(user_id),catch)
+            #后面的程序不执行
+            return
+
         #触发事件
         await event_happen(data,str(user_id),catch)
 
@@ -263,14 +296,13 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             if(not name in data[str(user_id)]):
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data[str(user_id)][name] = 0
-                data[str(user_id)][name] += 1  #数量+1
+            data[str(user_id)][name] += 1  #数量+1
         else:
             if(str(user_id) in data2):
                 if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                     new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                     data2[str(user_id)][str(level)+'_'+str(num)] = 0
-                if(data2[str(user_id)][str(level)+'_'+str(num)] < 20):
-                    data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+                data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
             else:
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data2[str(user_id)] = {}
@@ -764,6 +796,11 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
         #一些啥都干不了的buff
         if(data[str(user_id)].get('buff')=='lost'): return
 
+        #假如在0号猎场
+        liechang_number = data[str(user_id)].get('lc')
+        if(liechang_number=='0'): 
+            await daoju.finish("0号猎场还没法使用道具哦~~后续将推出0号猎场特有的道具系统~")
+
         if("item" in data[str(user_id)]):
             use_item_name = str(arg)  #获取使用道具名称
             success = 0  #0代表没有效果，1代表成功，2代表失败
@@ -791,8 +828,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     #随机选择是正常抓取还是从兔类Kid里抓
                     rnd = random.randint(1,10)
                     if(rnd <= 8):
-                        #二号猎场还没有兔类kid
-                        liechang_number = data[str(user_id)]['lc']
                         #从兔类里抓
                         rabbit = eval(f"rabbit_kid{liechang_number}")
                         rabbit_rnd = random.randint(0, len(rabbit)-1)  #随机选择一个
@@ -810,7 +845,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     """
                     没啥特殊的，只是额外正常地再抓一次
                     """
-                    information = zhua_random(liechang_number=data[str(user_id)]['lc'])
+                    information = zhua_random(liechang_number=liechang_number)
                     data[str(user_id)]["item"][use_item_name] -= 1
                     success = 1
                 else:
@@ -820,7 +855,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     """
                     没啥特殊的，只是额外正常地再抓一次
                     """
-                    information = zhua_random(20, 100, 500, 800, liechang_number=data[str(user_id)]['lc'])
+                    information = zhua_random(20, 100, 500, 800, liechang_number=liechang_number)
                     data[str(user_id)]["item"][use_item_name] -= 1
                     success = 1
                 else:
@@ -882,7 +917,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         next_time = current_time + datetime.timedelta(minutes=60)
                         data[str(user_id)]['next_time'] = time_decode(next_time)
                     #zhuakid并增加爆率
-                    information = zhua_random(50,200,500,999,liechang_number=data[str(user_id)]['lc'])
+                    information = zhua_random(50,200,500,999,liechang_number=liechang_number)
                     success = 1
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
@@ -925,7 +960,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 data[str(user_id)]["buff"] = "hurt"  #受伤
                                 fail_text = f"提取失败！提取器爆炸了，你受伤了，需要休息{str(cd_time)}分钟"  #失败文本
                                 success = 2
-                        data[str(user_id)]["item"][use_item_name] -= 1
+                            data[str(user_id)]["item"][use_item_name] -= 1
+                        else:
+                            return
                     else:
                         await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
                 if(use_item_name.lower()=="kid献祭器"):
@@ -947,7 +984,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             logger.info("因为不存在该kid献祭被中断")
                             return
                         #进行献祭
-                        if(nums[2]!=data[str(user_id)]['lc']):
+                        if(nums[2]!=liechang_number):
                             await daoju.finish(f"你不能献祭别的猎场的kid！", at_sender=True)
                         if(nums[2]=='1'):
                             #一号猎场
@@ -957,16 +994,16 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
                         else:
                             #二号猎场及其以后，按等级和编号确定
-                            data2 = open_data(user_path/f"UserList{data[str(user_id)]['lc']}.json")
+                            data2 = open_data(user_path/f"UserList{liechang_number}.json")
                             level_num = nums[0]+'_'+nums[1]
                             if(data2[str(user_id)].get(level_num,0) >= 1):
                                 data2[str(user_id)][level_num] -= 1
-                                save_data(user_path/f"UserList{data[str(user_id)]['lc']}.json",data2)
+                                save_data(user_path/f"UserList{liechang_number}.json",data2)
                             else:
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
 
                         #zhuakid并增加爆率
-                        information = zhua_random(10*2*int(nums[0]), 50*1.5*int(nums[0]), 200*1.2*int(nums[0]), 500*int(nums[0]), liechang_number=data[str(user_id)]['lc'])
+                        information = zhua_random(10*2*int(nums[0]), 50*1.5*int(nums[0]), 200*1.2*int(nums[0]), 500*int(nums[0]), liechang_number=liechang_number)
                         success = 1
 
                     else:
@@ -982,7 +1019,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 img         = information[2]   #图片
                 description = information[3]   #描述
                 num         = information[4]   #编号
-                lc          = information[5]   #所属猎场        
+                lc          = information[5]   #所属猎场
  
                 #打开副表
                 data2 = {}
@@ -994,16 +1031,14 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 if(lc=='1'):
                     if(not name in data[str(user_id)]):
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                        data[str(user_id)][name] = 0
-                    
-                    if(data[str(user_id)][name] < 20):
-                        data[str(user_id)][name] += 1
+                        data[str(user_id)][name] = 0                   
+                    data[str(user_id)][name] += 1
                 else:
                     if(str(user_id) in data2):
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                             new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                             data2[str(user_id)][str(level)+'_'+str(num)] = 0
-                            data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+                        data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
                     else:
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data2[str(user_id)] = {}

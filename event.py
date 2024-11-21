@@ -3,10 +3,13 @@ import json
 import random
 from pathlib import Path
 from nonebot.adapters.onebot.v11 import MessageSegment
+from .function import open_data, save_data, print_zhua
 #事件系统
 #在道具使用和普通的抓kid中会触发
 
+pvp_path = Path() / "data" / "UserList" / "pvp.json"
 user_path = Path() / "data" / "UserList" / "UserData.json"
+user_liste2 = Path() / "data" / "UserList" / "UserList2.json"
 forest_path = Path() / "data" / "UserList" / "Forest.json"
 
 #脱险事件
@@ -158,6 +161,108 @@ async def ForestStuck(user_data, user_id, message):
 
             #发送消息
             await message.finish(random.choice(text)+"你需要原地等待一个小时", at_sender=True)
+
+#kid竞技场有关机制
+async def kid_pvp_event(user_data, user_id, message):
+    #打开二号猎场库存
+    kc_data = {}
+    kc_data = open_data(user_liste2)
+    #如果没有注册二号猎场
+    if(not user_id in kc_data):
+        await message.finish("你还没有注册二号猎场哦~", at_sender=True)
+    #打开竞技场文件
+    pvp_data = {}
+    pvp_data = open_data(pvp_path)
+    #若本次竞技场还没有任何信息，先初始化一下
+    if(pvp_data=={}):
+        pvp_data['count'] = 0
+        pvp_data['list'] = []
+    #从库存中随机抓出一个kid，概率均匀
+    kid = random.choice(list(kc_data[user_id].keys()))
+    #在猎场文件中找到位置
+    list_current = pvp_data['list']
+    stat = 0        #0是依次排队进入，1是替换，2是赢了，3是输了
+    kida = kid.split('_')     #将字符串转为信息列表
+    levela = int(kida[0])          #我的等级
+    numa = int(kida[1])            #我的编号
+    levelb = 0                     #对面等级
+    numb = 0                       #对面编号
+    if(len(list_current) < 10):
+        #还没满十个不发生PK，依次排队进入
+        list_current.append([user_id,kid])
+        stat = 0
+    else:
+        #满十个的情况下进入PK逻辑
+        #随机选择十个位置中一个
+        pos = random.randint(0,9)
+        #PVP
+        if(list_current[pos][0]==user_id):
+            #如果选到的位置被自己占用了直接替换即可
+            kidb = list_current[pos][1].split('_')
+            levelb = int(kidb[0])
+            numb = int(kidb[1])
+            list_current[pos][1] = kid
+            stat = 1
+        else:
+            #如果选到的位置被别人占用了发生PK，暂时先试用高等级直接打败低等级的逻辑，等级相同就抛硬币
+            kidb = list_current[pos][1].split('_')
+            levelb = int(kidb[0])
+            numb = int(kidb[1])
+            if(levela > levelb):
+                list_current[pos] = [user_id,kid]
+                stat = 2
+            else:
+                if(levela==levelb):
+                    rnd = random.randint(0,1)
+                    if(rnd==0):
+                        list_current[pos] = [user_id,kid]
+                        stat = 2
+                    else:
+                        stat = 3
+                else:
+                    stat = 3
+    #增加回合次数
+    pvp_data['count'] += 1
+    #更新pvp文件
+    pvp_data['list'] = list_current
+    save_data(pvp_path,pvp_data)
+    ####通告PK结果####
+    pk_text = ""
+    #自己kid的信息(查等级，查名字，查描述，查图片)
+    information = print_zhua(levela,numa,'2')
+    img = information[2]
+    description = information[3]
+    #根据不同状态添加额外反馈信息
+    if(stat==2):
+        oppo = print_zhua(levelb,numb,'2')
+        pk_text = f"\n\n打败了{levelb}级的{oppo[1]}！"
+    if(stat==3):
+        oppo = print_zhua(levelb,numb,'2')
+        pk_text = f"\n\n但是被{levelb}级的{oppo[1]}打败了！>_<"
+    if(stat==1):
+        oppo = print_zhua(levelb,numb,'2')
+        pk_text = f"\n\n替换了你放的{levelb}级的{oppo[1]}！"
+    if(stat==0):
+        pk_text = "你占用了一个空位置"
+    #发送信息
+    await message.send(f"等级：{levela}\n"+MessageSegment.image(img)+f"\n{description}"+pk_text,at_sender=True)
+    #公布结果(回合数达到200决出胜负)
+    list_final = []
+    for v in list_current:
+        list_final.append(v[0])
+    if(pvp_data.get('count',0)>=200):
+        set_final = set(list_final)
+        text = "恭喜"
+        for v in set_final:
+            text += MessageSegment.at(v)
+            user_data[user_id]['spike'] += 500
+        text += "在这场角逐中取得胜利,全员获得500刺儿奖励！"
+        save_data(user_path,user_data)
+        #重置pvp文件并发信息
+        pvp_data.clear()
+        await message.send(text)
+    #保存pvp文件
+    save_data(pvp_path,pvp_data)
 
 
         
