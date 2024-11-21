@@ -3,7 +3,7 @@ import json
 import random
 from pathlib import Path
 from nonebot.adapters.onebot.v11 import MessageSegment
-from .function import open_data, save_data, print_zhua
+from .function import open_data, save_data, print_zhua, time_decode
 #事件系统
 #在道具使用和普通的抓kid中会触发
 
@@ -163,7 +163,7 @@ async def ForestStuck(user_data, user_id, message):
             await message.finish(random.choice(text)+"你需要原地等待一个小时", at_sender=True)
 
 #kid竞技场有关机制
-async def kid_pvp_event(user_data, user_id, message):
+async def kid_pvp_event(user_data, user_id, nickname, message, bot):
     #打开二号猎场库存
     kc_data = {}
     kc_data = open_data(user_liste2)
@@ -189,7 +189,7 @@ async def kid_pvp_event(user_data, user_id, message):
     numb = 0                       #对面编号
     if(len(list_current) < 10):
         #还没满十个不发生PK，依次排队进入
-        list_current.append([user_id,kid])
+        list_current.append([user_id,kid,nickname])
         stat = 0
     else:
         #满十个的情况下进入PK逻辑
@@ -209,13 +209,13 @@ async def kid_pvp_event(user_data, user_id, message):
             levelb = int(kidb[0])
             numb = int(kidb[1])
             if(levela > levelb):
-                list_current[pos] = [user_id,kid]
+                list_current[pos] = [user_id,kid,nickname]
                 stat = 2
             else:
                 if(levela==levelb):
                     rnd = random.randint(0,1)
                     if(rnd==0):
-                        list_current[pos] = [user_id,kid]
+                        list_current[pos] = [user_id,kid,nickname]
                         stat = 2
                     else:
                         stat = 3
@@ -243,9 +243,9 @@ async def kid_pvp_event(user_data, user_id, message):
         oppo = print_zhua(levelb,numb,'2')
         pk_text = f"\n\n替换了你放的{levelb}级的{oppo[1]}！"
     if(stat==0):
-        pk_text = "你占用了一个空位置"
+        pk_text = "\n\n你占用了一个空位置"
     #发送信息
-    await message.send(f"等级：{levela}\n"+MessageSegment.image(img)+f"\n{description}"+pk_text,at_sender=True)
+    await message.send(f"\n等级：{levela}\n"+MessageSegment.image(img)+f"\n{description}"+pk_text,at_sender=True)
     #公布结果(回合数达到200决出胜负)
     list_final = []
     for v in list_current:
@@ -255,13 +255,14 @@ async def kid_pvp_event(user_data, user_id, message):
         text = "恭喜"
         for v in set_final:
             text += MessageSegment.at(v)
-            user_data[user_id]['spike'] += 500
+            user_data[v]['spike'] += 500
         text += "在这场角逐中取得胜利,全员获得500刺儿奖励！"
-        save_data(user_path,user_data)
         #重置pvp文件并发信息
         pvp_data.clear()
-        await message.send(text)
+        await bot.call_api("send_group_msg",group_id=2159014275, message=text)
     #保存pvp文件
+    user_data[user_id]['next_time'] = time_decode(datetime.datetime.now()+datetime.timedelta(minutes=5))
+    save_data(user_path,user_data)
     save_data(pvp_path,pvp_data)
 
 

@@ -25,12 +25,12 @@ async def ck_handle():
     text = "当前战况：\n\n"
     for v in pvp_data['list']:
         i += 1  #编号
-        id = v[0]   #qq号
+        nickname = v[2]   #qq号
         kid = v[1].split('_')
         level = kid[0]
         num = kid[1]
         name = kid_data2.get(level).get(num).get('name')
-        text += f"{i}. "+MessageSegment.at(id)+f"的{level}级{name}\n"
+        text += f"{i}. "+nickname+f"的{level}级{name}\n"
 
     await ck.finish(text)
 

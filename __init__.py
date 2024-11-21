@@ -93,7 +93,6 @@ async def npc_handle(arg: Message = CommandArg()):
     if(name in npc_da): 
         await npc.finish(npc_da[name])
 
-
 ##########################管理员指令###########################
 
 #全服发放刺儿
@@ -260,7 +259,8 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 
         #特殊猎场kid竞技场内事件
         if(data[str(user_id)]['lc']=='0'):
-            await kid_pvp_event(data,str(user_id),catch)
+            nickname = event.sender.nickname
+            await kid_pvp_event(data,str(user_id),nickname,catch,bot)
             #后面的程序不执行
             return
 
