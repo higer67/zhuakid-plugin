@@ -5,7 +5,8 @@ from pathlib import Path
 import json
 
 __all__ = [
-    'mykid'
+    'mykid',
+    'myitem'
 ]
 
 #载入kid一猎场之后的档案
@@ -15,6 +16,43 @@ user_path = Path() / "data" / "UserList"
 file_name = "UserData.json"
 
 user_list2 = Path() / "data" / "UserList" / "UserList2.json"
+
+#查看道具库存
+myitem = on_fullmatch('myitem', permission=GROUP, priority=1, block=True)
+@myitem.handle()
+async def myitem_handle(bot: Bot, event: GroupMessageEvent):
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    user_id = event.get_user_id()
+
+    #读取道具个数并转发消息
+    if(str(user_id) in data):
+        #没有道具
+        if(not 'item' in data[str(user_id)]):
+            await myitem.finish("你还没有任何道具哦！", at_sender = True)
+        
+        #有道具则读取道具名字和其对应数量
+        nickname = event.sender.nickname
+        text = f"用户{nickname},你目前有：\n"
+        for k,v in data[str(user_id)]['item'].items():
+            text += f"{v}个{k}\n"
+        
+        msg_list = [
+            {
+                "type": "node",
+                "data":{
+                    "name": "道具库存室",
+                    "uin": event.self_id,
+                    "content": text
+                }
+            }
+        ]
+        await bot.call_api("send_group_forward_msg", group_id = event.group_id, messages = msg_list)
+    else:
+        await myitem.finish("你还没尝试抓过kid......", at_sender = True)
+
 
 #查看kid库存(二猎场以后)
 mykid = on_fullmatch('mykid lc2', permission=GROUP, priority=1, block=True)

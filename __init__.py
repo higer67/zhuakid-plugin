@@ -114,12 +114,107 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
         data = json.load(f)
 
     #给每个账户发刺儿
-    for k, v in data.items():
+    for v in data.values():
         v['spike'] += jiangli
 
     #写入文件
     with open(user_path / file_name, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
+
+#查询某个用户的刺儿
+ck_admin_single = on_command("查询", permission=GROUP, priority=1, block=True)
+@ck_admin_single.handle()
+async def ck_admin_single_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    message = event.get_message()
+    await ck_admin_single.finish(len(str(message)))
+    #得到at的人的qq号
+    try:
+        user_id = arg[0].data['qq']
+    except:
+        await fafang_single.finish("请@一下要查询的用户！", at_sender=True)
+
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    #没有这个用户
+    if(not user_id in data):
+        await fafang_single.finish("此人还没有注册zhuakid账号", at_sender=True)
+
+    #有这个用户
+    spike = data[user_id]['spike']
+    await ck_admin_single.finish(f"该用户目前拥有{spike}刺儿！", at_sender=True)
+
+#给某个用户发放刺儿
+fafang_single = on_command("发放", permission=GROUP, priority=1, block=True)
+@fafang_single.handle()
+async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    #得到at的人的qq号
+    try:
+        user_id = arg[0].data['qq']
+    except:
+        await fafang_single.finish("请@一下要发放刺儿的用户！", at_sender=True)
+
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    #没有这个用户
+    if(not user_id in data):
+        await fafang_single.finish("此人还没有注册zhuakid账号", at_sender=True)
+
+    #有这个用户
+    try:
+        jiangli = int(arg[1].data['text'])
+        if(jiangli <= 0):
+            return
+        data[user_id]['spike'] += jiangli
+
+        #写入文件
+        with open(user_path / file_name, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+
+        await fafang_single.finish(f"给"+MessageSegment.at(user_id)+f"发放{jiangli}刺儿成功！", at_sender=True)
+    except:
+        await fafang_single.finish("格式错误，请按照/发放 (用户QQ号)(数量)的格式输入！", at_sender=True)
+
+#查询超市购买历史记录
+ck_admin_history = on_command("账单", permission=GROUP, priority=1, block=True)
+@ck_admin_history.handle()
+async def ck_admin_history_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    #打开文件
+    data_bili = {}
+    today = ""
+    if(len(str(arg))==0):
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+    else:
+        today = str(arg)
+    
+    bili = Path()/"data"/"Shop"/f"{today}.json"
+    if(os.path.exists(bili)):
+        with open(bili, 'r', encoding='utf-8') as f:
+            data_bili = json.load(f)
+
+        text = f"\n     {today}     \n"
+        for v in data_bili['list']:
+            text += f"{v}\n"
+        await ck_admin_history.finish(text, at_sender=True)
+    else:
+        await ck_admin_history.finish("没有找到该日期的账单！", at_sender=True)
 
 
 ##########################玩家游玩指令#########################
@@ -677,7 +772,7 @@ async def kid_shop(bot: Bot, event: Event):
 #购买商品
 buy = on_command('buy', permission=GROUP, priority=1, block=True)
 @buy.handle()
-async def buy_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
+async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
     #打开文件
     #比较营业时间与时间点
     current_time = datetime.datetime.now().time()
@@ -765,10 +860,35 @@ async def buy_handle(bot: Bot, event: Event, arg: Message = CommandArg()):
                     #写入用户文件
                     with open(user_path / file_name, 'w', encoding='utf-8') as f:
                         json.dump(data, f, indent=4)
-                    
+
+                    #写入商店查询账单
+                    today = datetime.date.today().strftime("%Y-%m-%d")
+                    bili = Path()/"data"/"Shop"/f"{today}.json"
+                    if(os.path.exists(bili)):
+                        data_bili = {}
+                        #读入存在的账单文件
+                        with open(bili, 'r', encoding='utf-8') as f:
+                            data_bili = json.load(f)
+
+                        data_bili['list'].append(f"{event.sender.nickname}购买了{n}个{buy_item_name}")                  
+
+                        #保存账单文件
+                        with open(bili, 'w', encoding='utf-8') as f:
+                            json.dump(data_bili, f, indent=4)
+
+                    else:
+                        data_bili = {}
+                        data_bili['list'] = []
+
+                        data_bili['list'].append(f"{event.sender.nickname}购买了{n}个{buy_item_name}")                  
+
+                        #保存账单文件
+                        with open(bili, 'w', encoding='utf-8') as f:
+                            json.dump(data_bili, f, indent=4)
+
                     #写入商店库存文件
                     with open(shop_database, 'w', encoding='utf-8') as f:
-                        json.dump(shop_data, f, indent=4)             
+                        json.dump(shop_data, f, indent=4)       
                     
                     #发送消息
                     await buy.send(f"购买成功！你还剩{str(data[str(user_id)]['spike'])}刺儿", at_sender=True)
