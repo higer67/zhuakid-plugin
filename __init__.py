@@ -95,6 +95,24 @@ async def npc_handle(arg: Message = CommandArg()):
 
 ##########################管理员指令###########################
 
+#查看用户数量
+len_user = on_command("用户数", permission=GROUP, priority=1, block=True)
+@len_user.handle()
+async def len_user_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    #统计数量
+    count = len(data)
+
+    await len_user.finish(f"zhuakid游戏目前共有{count}个用户！", at_sender=True)
+
 #全服发放刺儿
 fafang = on_command("全服发放", permission=GROUP, priority=1, block=True)
 @fafang.handle()
@@ -129,13 +147,9 @@ async def ck_admin_single_handle(bot: Bot, event: GroupMessageEvent, arg: Messag
     if(str(event.user_id)!=bot_owner_id):
         return
 
-    message = event.get_message()
-    await ck_admin_single.finish(len(str(message)))
+    arg = str(arg).split(" ")
     #得到at的人的qq号
-    try:
-        user_id = arg[0].data['qq']
-    except:
-        await fafang_single.finish("请@一下要查询的用户！", at_sender=True)
+    user_id = arg[0]
 
     #打开文件
     data = {}
@@ -159,10 +173,8 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
         return
 
     #得到at的人的qq号
-    try:
-        user_id = arg[0].data['qq']
-    except:
-        await fafang_single.finish("请@一下要发放刺儿的用户！", at_sender=True)
+    arg = str(arg).split(" ")
+    user_id = arg[0]
 
     #打开文件
     data = {}
@@ -171,11 +183,14 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
 
     #没有这个用户
     if(not user_id in data):
-        await fafang_single.finish("此人还没有注册zhuakid账号", at_sender=True)
+        await fafang_single.finish("找不到该用户信息", at_sender=True)
 
     #有这个用户
     try:
-        jiangli = int(arg[1].data['text'])
+        jiangli = int(arg[1])
+    except:
+        await fafang_single.finish("格式错误，请按照/发放 (用户QQ号)(数量)的格式输入！", at_sender=True)
+    else:
         if(jiangli <= 0):
             return
         data[user_id]['spike'] += jiangli
@@ -185,8 +200,6 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
             json.dump(data, f, indent=4)
 
         await fafang_single.finish(f"给"+MessageSegment.at(user_id)+f"发放{jiangli}刺儿成功！", at_sender=True)
-    except:
-        await fafang_single.finish("格式错误，请按照/发放 (用户QQ号)(数量)的格式输入！", at_sender=True)
 
 #查询超市购买历史记录
 ck_admin_history = on_command("账单", permission=GROUP, priority=1, block=True)
@@ -209,7 +222,7 @@ async def ck_admin_history_handle(bot: Bot, event: GroupMessageEvent, arg: Messa
         with open(bili, 'r', encoding='utf-8') as f:
             data_bili = json.load(f)
 
-        text = f"\n     {today}     \n"
+        text = f"\n{today}\n"
         for v in data_bili['list']:
             text += f"{v}\n"
         await ck_admin_history.finish(text, at_sender=True)
@@ -1184,8 +1197,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 at_sender = True)
             #使用失败
             if(success==2):
-                #消耗道具
-                data[str(user_id)]["item"][use_item_name] -= 1
                 #如果道具归0则将该项置空
                 if(data[str(user_id)]["item"][use_item_name]==0): del data[str(user_id)]["item"][use_item_name]
                 
