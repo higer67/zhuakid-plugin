@@ -32,6 +32,7 @@ from .function import *
 from .event import event_happen, outofdanger, kid_pvp_event
 from .kidjd import *
 from .pvp import *
+from .render import *
 
 ########数据信息#######
 
@@ -436,7 +437,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 ##每日签到
 qd = on_fullmatch('签到', permission=GROUP, priority=1, block=True)
 @qd.handle()
-async def dailyqd(bot: Bot, event: Event):
+async def dailyqd(bot: Bot, event: GroupMessageEvent):
     data = {}
     if(os.path.exists(user_path / file_name)):
         #读取刺儿数量
@@ -444,6 +445,7 @@ async def dailyqd(bot: Bot, event: Event):
             data = json.load(f)
 
         user_id = event.get_user_id() #获取qq号
+        nickname = event.sender.nickname  #获取昵称
         #如果注册账号了就可以签到
         if(str(user_id) in data):
 
@@ -465,7 +467,7 @@ async def dailyqd(bot: Bot, event: Event):
                 data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                 data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #日期时间对象转字符串
                 #发送消息
-                await qd.send("签到成功，奖励你"+f'{spike}刺儿')
+                await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sener=True)
             else:
                 #随机奖励刺儿数量
                 if(current_date_str!=prevous_date_str):
@@ -473,7 +475,7 @@ async def dailyqd(bot: Bot, event: Event):
                     data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                     data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #刷新日期，日期时间对象转字符串
                     #发送信息
-                    await qd.send("签到成功，奖励你"+f'{spike}刺儿')
+                    await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sener=True)
                 else:
                     await qd.send("一天只能签到一次吧......")
         else:
