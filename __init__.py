@@ -467,7 +467,7 @@ async def dailyqd(bot: Bot, event: GroupMessageEvent):
                 data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                 data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #日期时间对象转字符串
                 #发送消息
-                await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sener=True)
+                await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sender=True)
             else:
                 #随机奖励刺儿数量
                 if(current_date_str!=prevous_date_str):
@@ -475,7 +475,7 @@ async def dailyqd(bot: Bot, event: GroupMessageEvent):
                     data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                     data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #刷新日期，日期时间对象转字符串
                     #发送信息
-                    await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sener=True)
+                    await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sender=True)
                 else:
                     await qd.send("一天只能签到一次吧......")
         else:
