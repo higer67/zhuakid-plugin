@@ -33,6 +33,7 @@ from .event import event_happen, outofdanger, kid_pvp_event
 from .kidjd import *
 from .pvp import *
 from .render import *
+from .status import *
 
 ########数据信息#######
 
@@ -798,7 +799,6 @@ async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
     ######若在营业时间内则继续######
 
     shop_data = {}
-
     
     current_date = datetime.date.today()  #返回今天日期
     current_date_str = current_date.strftime("%Y-%m-%d")  #日期时间对象转字符串
@@ -895,7 +895,7 @@ async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
                         data_bili = {}
                         data_bili['list'] = []
 
-                        data_bili['list'].append(f"{event.sender.nickname}购买了{n}个{buy_item_name}")                  
+                        data_bili['list'].append(f"{event.sender.nickname}购买了{n}个{buy_item_name}")             
 
                         #保存账单文件
                         with open(bili, 'w', encoding='utf-8') as f:
