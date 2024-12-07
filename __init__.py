@@ -21,6 +21,7 @@ import random
 #加载KID档案信息
 from .config import *
 from .list2 import *
+from .list3 import *
 #加载商店信息和商店交互
 from .shop import item, today_item
 #加载剧情和NPC档案
@@ -41,7 +42,7 @@ from .status import *
 group_img = Path() / "data" / "group.jpg"
 
 #除了Kid名字以外的其他key值
-other = ["next_time", "spike", "date", "buff", "item", "lc"]
+other = ["next_time", "next_recover_time", "spike", "date", "buff", "item", "lc"]
 
 #隐藏级别kid
 kid_level0 = "Kid0"
@@ -231,6 +232,38 @@ async def ck_admin_history_handle(bot: Bot, event: GroupMessageEvent, arg: Messa
     else:
         await ck_admin_history.finish("没有找到该日期的账单！", at_sender=True)
 
+#神权！清除zhuakid的cd
+admin_timeClear = on_command("清除冷却", permission=GROUP, priority=1, block=True)
+@admin_timeClear.handle()
+async def timeClear_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+    
+    arg = str(arg).split(" ")
+    #清除冷却目标的qq号
+    user_id = arg[0]
+
+    data = {}
+    if(os.path.exists(user_path / file_name)):
+        with open(user_path / file_name, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    
+    #没有这个用户
+    if(not user_id in data):
+        await fafang_single.finish("找不到该用户信息", at_sender=True)
+    
+    current_time = datetime.datetime.now()
+    next_time_r = current_time + datetime.timedelta(seconds=1)
+    data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
+
+    #写入文件
+    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4)
+    await admin_timeClear.finish(MessageSegment.at(user_id)+f"的冷却已清除", at_sender=True)
+                
+    
 
 ##########################玩家游玩指令#########################
 
@@ -238,7 +271,7 @@ async def ck_admin_history_handle(bot: Bot, event: GroupMessageEvent, arg: Messa
 cklc = on_fullmatch('cklc', permission=GROUP, priority=1, block=True)
 @cklc.handle()
 async def cklc_handle():
-    text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2\n\n？号猎场：虚数空间\n危险等级：5"
+    text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2\n\n3号猎场：水晶矿洞\n危险等级：3\n\n？号猎场：虚数空间\n危险等级：5"
     await cklc.finish(text)
 
 #竞技场细则
@@ -279,7 +312,7 @@ async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             await qhlc.send(f"已经成功切换到0号猎场！有关0号猎场的细则请输入[0场细则]查看！", at_sender=True)
      
         #正常的收集型猎场
-        if(number in ['1','2']):
+        if(number in ['1','2','3']):
 
             #一些啥都干不了的buff
             if(data[user_id].get('buff')=='lost'): return
@@ -335,6 +368,20 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
             #迷路脱险事件
             await outofdanger(data,str(user_id),catch,current_time,next_time_r)
             
+            #debuff清除逻辑
+            current_time = datetime.datetime.now()
+            if(not 'next_recover_time' in data[str(user_id)]):
+                data[str(user_id)]['next_recover_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+
+            current_time = datetime.datetime.now()
+            recover_time = datetime.datetime.strptime(data.get(str(user_id)).get('next_recover_time'), "%Y-%m-%d %H:%M:%S")
+            if recover_time <= current_time:
+                data[str(user_id)]["buff"] = "normal"
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+
             #正常抓的逻辑
             if(current_time < next_time_r):
                 delta_time = next_time_r - current_time
@@ -379,9 +426,13 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 
         #如果是2号猎场以上需要存到另外的表中
         data2 = {}
-        if(data[str(user_id)]['lc']!='1'):
+        data3 = {}
+        if(data[str(user_id)]['lc']=='2'):
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
+        if(data[str(user_id)]['lc']=='3'):
+            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
+                data3 = json.load(f)
 
         #确定抓到哪个kid
         kid = zhua_random(liechang_number=data[str(user_id)]['lc'])
@@ -391,11 +442,14 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         description = kid[3]   #描述
         num         = kid[4]   #编号
         #奖励刺儿
-        if(level==1): spike_give = 5
-        if(level==2): spike_give = 10
-        if(level==3): spike_give = 15
-        if(level==4): spike_give = 20
-        if(level==5): spike_give = 25
+        if (data[str(user_id)].get('buff')!='poisoned'):
+            if(level==1): spike_give = 5
+            if(level==2): spike_give = 10
+            if(level==3): spike_give = 15
+            if(level==4): spike_give = 20
+            if(level==5): spike_give = 25
+        else:
+            spike_give = 0
         if(not 'spike' in data[str(user_id)]):
             data[str(user_id)]['spike'] = 0
 
@@ -407,7 +461,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data[str(user_id)][name] = 0
             data[str(user_id)][name] += 1  #数量+1
-        else:
+        elif (data[str(user_id)]['lc']=='2'):
             if(str(user_id) in data2):
                 if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                     new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
@@ -417,23 +471,46 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data2[str(user_id)] = {}
                 data2[str(user_id)][str(level)+'_'+str(num)] = 1
+        elif (data[str(user_id)]['lc']=='3'):
+            if(str(user_id) in data3):
+                if(not (str(level)+'_'+str(num)) in data3[str(user_id)]):
+                    new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                    data3[str(user_id)][str(level)+'_'+str(num)] = 0
+                data3[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+            else:
+                new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                data3[str(user_id)] = {}
+                data3[str(user_id)][str(level)+'_'+str(num)] = 1
+
+
             
         #写入kid收集表(副统计表)
-        if(data[str(user_id)]['lc']!='1'):
+        if(data[str(user_id)]['lc']=='2'):
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'w', encoding='utf-8') as f:
                 json.dump(data2, f, indent=4)
+        elif(data[str(user_id)]['lc']=='3'):
+            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'w', encoding='utf-8') as f:
+                json.dump(data3, f, indent=4)
 
         #写入主数据表
         with open(user_path / file_name, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
         #发送消息
-        await catch.send(new_print+
-                        f'\n等级: {level}\n'+
-                        f'{name}'+
-                        MessageSegment.image(img)+
-                        f'{description}'+
-                        '\n\n本次奖励'+f'{spike_give}刺儿',
-                        at_sender = True)
+        if(data[str(user_id)].get('buff')!='poisoned'):
+            await catch.send(new_print+
+                            f'\n等级: {level}\n'+
+                            f'{name}'+
+                            MessageSegment.image(img)+
+                            f'{description}'+
+                            '\n\n本次奖励'+f'{spike_give}刺儿',
+                            at_sender = True)
+        else:
+            await catch.send(new_print+
+                            f'\n等级: {level}\n'+
+                            f'{name}'+
+                            MessageSegment.image(img)+
+                            f'{description}',
+                            at_sender = True)
 
 ##每日签到
 qd = on_fullmatch('签到', permission=GROUP, priority=1, block=True)
@@ -465,14 +542,20 @@ async def dailyqd(bot: Bot, event: GroupMessageEvent):
             if(prevous_date_str==-1):
                 #随机奖励刺儿数量
                 spike = random.randint(1,100)
+                if('招财猫' in data[str(user_id)]['item']):
+                    num_of_extra_spike = data[user_id]['item']['招财猫'] * 4
+                    spike += num_of_extra_spike
                 data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                 data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #日期时间对象转字符串
                 #发送消息
                 await qd.send(MessageSegment.image(draw_qd(nickname,spike)), at_sender=True)
             else:
                 #随机奖励刺儿数量
-                if(current_date_str!=prevous_date_str):
+                if (current_date_str!=prevous_date_str):
                     spike = random.randint(1,100)
+                    if('招财猫' in data[str(user_id)]['item']):
+                        num_of_extra_spike = data[user_id]['item']['招财猫'] * 4
+                        spike += num_of_extra_spike
                     data[str(user_id)]['spike'] += spike  #刷新刺儿数量
                     data[str(user_id)]['date'] = current_date.strftime("%Y-%m-%d")  #刷新日期，日期时间对象转字符串
                     #发送信息
@@ -525,7 +608,7 @@ async def mykid_handle(bot: Bot, event: GroupMessageEvent):
         second = current_time.second
 
         #隐藏内容：半夜0点整查看库存会出现隐藏
-        if(hour==0 and minute==0 and second>=0 and second<=2):
+        if(hour==0 and minute==0 and second>=0 and second<=30):
             msg_list = []
             msg_list.append(
                 {
@@ -595,9 +678,13 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
     if(nums==0): return
     #打开应该查询的表
     data2 = {}
-    if(nums[2]!='1'):
+    data3 = {}
+    if(nums[2]=='2'):
         with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
             data2 = json.load(f)
+    if(nums[2]=='3'):
+        with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
+            data3 = json.load(f)
 
     #进入表中进行查询
     if(str(user_id) in data):
@@ -615,9 +702,26 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
                 await zs.finish(MessageSegment.image(img) + description, at_sender=True)
             else:
                 await zs.finish(f"你还没抓到过{name}", at_sender=True)
-        else:
+        elif(nums[2]=='2'):
             if(str(user_id) in data2):
                 if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
+                    #根据等级确定坐标
+                    level = int(nums[0])
+                    number = int(nums[1])
+
+                    kid = print_zhua(level,number,nums[2])
+                    img         = kid[2]
+                    description = kid[3]
+
+                    #发送图片
+                    await zs.finish(MessageSegment.image(img) + description, at_sender=True)
+                else:
+                    await zs.finish(f"你还没抓到过{name}", at_sender=True)
+            else:
+                await zs.finish(f"你还没抓到过{name}", at_sender=True)
+        elif(nums[2]=='3'):
+            if(str(user_id) in data3):
+                if((nums[0]+'_'+nums[1]) in data3[str(user_id)]):
                     #根据等级确定坐标
                     level = int(nums[0])
                     number = int(nums[1])
@@ -653,9 +757,13 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
     if(nums==0): return
     #打开应该查询的表
     data2 = {}
-    if(nums[2]!='1'):
+    data3 = {}
+    if(nums[2]=='2'):
         with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
             data2 = json.load(f)
+    if(nums[2]=='3'):
+        with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
+            data3 = json.load(f)
 
     user_id = event.get_user_id()
     if(str(user_id) in data):
@@ -666,10 +774,19 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
                 await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
             else:
                 await cknum.send(f"你还没抓到过{name}", at_sender=True)
-        else:
+        elif(nums[2]=='2'):
             if(str(user_id) in data2):
                 if((nums[0]+'_'+nums[1]) in data2[str(user_id)]):
                     number = data2[str(user_id)][nums[0]+'_'+nums[1]]
+                    await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
+                else:
+                    await cknum.finish(f"你还没抓到过{name}", at_sender=True)
+            else:
+                await cknum.finish(f"你还没抓到过{name}", at_sender=True)
+        elif(nums[2]=='3'):
+            if(str(user_id) in data3):
+                if((nums[0]+'_'+nums[1]) in data3[str(user_id)]):
+                    number = data3[str(user_id)][nums[0]+'_'+nums[1]]
                     await cknum.finish(f"你有{str(number)}个{name}", at_sender=True)
                 else:
                     await cknum.finish(f"你还没抓到过{name}", at_sender=True)
@@ -693,6 +810,10 @@ async def zhuajd(bot: Bot, event: Event):
     data2 = {}
     with open(user_path / f"UserList2.json", 'r', encoding='utf-8') as f:
         data2 = json.load(f)
+    
+    data3 = {}
+    with open(user_path / f"UserList3.json", 'r', encoding='utf-8') as f:
+        data3 = json.load(f)
 
     #计数
     count = [0, 0, 0, 0, 0] #抓的数量
@@ -707,6 +828,9 @@ async def zhuajd(bot: Bot, event: Event):
         max[int(k)-1] = len(v)
 
     for k, v in kid_name_list2.items():
+        max[int(k)-1] += len(v)
+    
+    for k, v in kid_name_list3.items():
         max[int(k)-1] += len(v)
 
 
@@ -724,6 +848,13 @@ async def zhuajd(bot: Bot, event: Event):
         #二号猎场进度
         if(str(user_id) in data2):
             for k in data2[str(user_id)].keys():
+                level = k[0]
+                count[int(level)-1] += 1
+                jindu += int(level)
+        
+        #三号猎场进度
+        if(str(user_id) in data3):
+            for k in data3[str(user_id)].keys():
                 level = k[0]
                 count[int(level)-1] += 1
                 jindu += int(level)
@@ -766,7 +897,7 @@ async def kid_shop(bot: Bot, event: Event):
         #根据是否为同一天来查看是否刷新商品
         previous_date_str = shop_data["date"]
 
-        if(previous_date_str!=current_date_str):
+        if (previous_date_str!=current_date_str):
             shop_data["item"] = today_item
             shop_data["date"] = current_date_str
 
@@ -811,7 +942,7 @@ async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
         #根据是否为同一天来查看是否刷新商品
         previous_date_str = shop_data["date"]
 
-        if(previous_date_str!=current_date_str):
+        if (previous_date_str!=current_date_str):
             shop_data["item"] = today_item
             shop_data["date"] = current_date_str
 
@@ -928,9 +1059,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
     user_id = event.get_user_id()
     if(str(user_id) in data):
 
-        #一些啥都干不了的buff
-        if(data[str(user_id)].get('buff')=='lost'): return
-
         #假如在0号猎场
         liechang_number = data[str(user_id)].get('lc')
         if(liechang_number=='0'): 
@@ -940,7 +1068,45 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
             use_item_name = str(arg)  #获取使用道具名称
             success = 0  #0代表没有效果，1代表成功，2代表失败
             fail_text = "失败！"   #失败文本
-            #如果受伤了则无法使用道具
+
+            if(use_item_name=="时间秒表"):
+                if(data.get(user_id).get('item').get('时间秒表',0) > 0):
+                    current_time = datetime.datetime.now()
+                    next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
+                    if(current_time < next_time_r):
+
+                        rnd = random.randint(1,10)
+                        next_time = get_time_from_data(data[str(user_id)])
+                        data[str(user_id)]["item"][use_item_name] -= 1 
+                        #如果正常发挥了作用，清除全部冷却时长
+                        if rnd > 4:
+                            next_time_r = current_time + datetime.timedelta(seconds=1)
+                            data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
+                            #写入文件
+                            with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                                json.dump(data, f, indent=4)
+                            await daoju.finish(f"使用成功，现在你可以抓kid了！", at_sender=True)
+                        #否则加冷却
+                        else:
+                            #但是可以使用神权:)
+                            if(user_id!=bot_owner_id):
+                                next_time_r = next_time + datetime.timedelta(minutes=60)
+                                data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
+                                #写入文件
+                                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                                    json.dump(data, f, indent=4)
+                                await daoju.finish(f"秒表发生了错误，你的冷却时长增加了1小时", at_sender=True)
+                            else:
+                                await daoju.finish(f"秒表发生了错误，但你抵挡了错误所带来的严重后果，因此无事发生", at_sender=True)
+                    else:
+                        await daoju.finish(f"你现在可以抓kid呀，无需使用此道具", at_sender=True)
+                else:
+                    await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+
+            #一些啥都干不了的buff
+            if(data[str(user_id)].get('buff')=='lost'): return
+
+            #如果受伤了则无法使用道具(时间秒表除外)
             if(data[str(user_id)].get("buff")=="hurt"): 
                 #一些额外操作：如果还没过下次时间，计算与下次的时间间隔，如果过了，可以使用道具
                 current_time = datetime.datetime.now()
@@ -952,6 +1118,39 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     data[str(user_id)]["buff"] = "normal"
 
             #道具功能列表
+            if(use_item_name=="万能解药"):
+                if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
+
+                    """
+                    万能解药：解除不良状态
+                    """
+
+                    if(data[str(user_id)].get("buff")!="normal"):
+                        data[str(user_id)]["buff"] = "normal"
+                        current_time = datetime.datetime.now()
+                        data[user_id]['next_recover_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                        #写入文件
+                        with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                            json.dump(data, f, indent=4)
+                        await daoju.finish(f"不良状态已清除", at_sender=True)    
+                    else:
+                        await daoju.finish(f"你现在没有不良状态", at_sender=True)               
+                else:
+                    await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+            
+            #debuff清除逻辑(使用其他抓kid道具前判定)
+            current_time = datetime.datetime.now()
+            if(not 'next_recover_time' in data[str(user_id)]):
+                data[str(user_id)]['next_recover_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+
+            recover_time = datetime.datetime.strptime(data.get(str(user_id)).get('next_recover_time'), "%Y-%m-%d %H:%M:%S")
+            if recover_time <= current_time:
+                data[str(user_id)]["buff"] = "normal"
+                with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+
             if(use_item_name=="胡萝卜"):
                 if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
 
@@ -961,6 +1160,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     """
 
                     #随机选择是正常抓取还是从兔类Kid里抓
+                    if liechang_number=='3':
+                        if data[user_id]['item'].get('神秘碎片',0) < 10:
+                            await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)   
                     rnd = random.randint(1,10)
                     if(rnd <= 8):
                         #从兔类里抓
@@ -972,17 +1174,20 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         #正常抓取
                         information = zhua_random(liechang_number=data[str(user_id)]['lc'])
                         success = 1
-                    data[str(user_id)]["item"][use_item_name] -= 1                      
+                    data[str(user_id)]["item"][use_item_name] -= 1                
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
             if(use_item_name=="弹弓"):
+                """
+                没啥特殊的，只是额外正常地再抓一次
+                """
                 if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
-                    """
-                    没啥特殊的，只是额外正常地再抓一次
-                    """
+                    if liechang_number=='3':
+                        if data[str(user_id)].get("item").get('神秘碎片', 0) < 10:
+                            await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                     information = zhua_random(liechang_number=liechang_number)
                     data[str(user_id)]["item"][use_item_name] -= 1
-                    success = 1
+                    success = 1  
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
             if(use_item_name=="一次性小手枪"):
@@ -990,9 +1195,12 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     """
                     没啥特殊的，只是额外正常地再抓一次
                     """
+                    if liechang_number=='3':
+                        if data[str(user_id)].get("item").get('神秘碎片', 0) < 10:
+                            await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                     information = zhua_random(20, 100, 500, 800, liechang_number=liechang_number)
                     data[str(user_id)]["item"][use_item_name] -= 1
-                    success = 1
+                    success = 1 
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
             if(use_item_name=="赌徒之眼"):
@@ -1040,6 +1248,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     await daoju.finish("当前du局非常安全，你可以放心进入", at_sender=True)                 
             if(use_item_name=="时间献祭器"):
                 if(data.get(user_id).get('item').get('时间献祭器',0) > 0):
+                    if liechang_number=='3':
+                        if data[str(user_id)].get("item").get('神秘碎片', 0) < 10:
+                            await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                     next_time = get_time_from_data(data[str(user_id)])
                     current_time = datetime.datetime.now()
                     #没到下一次抓的时间
@@ -1063,6 +1274,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 use_item_name = command[0]   #参数1
                 arg2 = command[1]   #参数2
                 if(use_item_name.lower()=="kid提取器"):
+                    if liechang_number=='3':
+                        if data[str(user_id)].get("item").get('神秘碎片', 0) < 10:
+                            await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                     if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
                         """
                         隐藏kid和一些隐藏线索
@@ -1097,11 +1311,14 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 success = 2
                             data[str(user_id)]["item"][use_item_name] -= 1
                         else:
-                            return
+                            return 
                     else:
                         await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
                 if(use_item_name.lower()=="kid献祭器"):
                     if(data.get(user_id).get('item').get('kid献祭器',0) > 0):
+                        if liechang_number=='3':
+                            if data[str(user_id)].get("item").get('神秘碎片', 0) < 10:
+                                await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                         next_time = get_time_from_data(data[str(user_id)])
                         current_time = datetime.datetime.now()
                         #没到下一次抓的时间
@@ -1127,7 +1344,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 data[str(user_id)][arg2.lower()] -= 1
                             else:
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
-                        else:
+                        elif(nums[2]=='2'):
                             #二号猎场及其以后，按等级和编号确定
                             data2 = open_data(user_path/f"UserList{liechang_number}.json")
                             level_num = nums[0]+'_'+nums[1]
@@ -1136,11 +1353,18 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 save_data(user_path/f"UserList{liechang_number}.json",data2)
                             else:
                                 await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
+                        elif(nums[2]=='3'):
+                            data3 = open_data(user_path/f"UserList{liechang_number}.json")
+                            level_num = nums[0]+'_'+nums[1]
+                            if(data3[str(user_id)].get(level_num,0) >= 1):
+                                data3[str(user_id)][level_num] -= 1
+                                save_data(user_path/f"UserList{liechang_number}.json",data3)
+                            else:
+                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
 
                         #zhuakid并增加爆率
                         information = zhua_random(10*2*int(nums[0]), 50*1.5*int(nums[0]), 200*1.2*int(nums[0]), 500*int(nums[0]), liechang_number=liechang_number)
                         success = 1
-
                     else:
                         await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
 
@@ -1158,9 +1382,13 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
  
                 #打开副表
                 data2 = {}
-                if(lc!='1'):
+                data3 = {}
+                if(lc=='2'):
                     with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
+                if(lc=='3'):
+                    with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
+                        data3 = json.load(f)
 
                 #计数
                 if(lc=='1'):
@@ -1168,7 +1396,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data[str(user_id)][name] = 0                   
                     data[str(user_id)][name] += 1
-                else:
+                elif(lc=='2'):
                     if(str(user_id) in data2):
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                             new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
@@ -1177,15 +1405,29 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     else:
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data2[str(user_id)] = {}
-                        data2[str(user_id)][str(level)+'_'+str(num)] = 1               
+                        data2[str(user_id)][str(level)+'_'+str(num)] = 1 
+                elif(lc=='3'):
+                    if(str(user_id) in data3):
+                        if(not (str(level)+'_'+str(num)) in data3[str(user_id)]):
+                            new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                            data3[str(user_id)][str(level)+'_'+str(num)] = 0
+                        data3[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
+                    else:
+                        new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
+                        data3[str(user_id)] = {}
+                        data3[str(user_id)][str(level)+'_'+str(num)] = 1               
 
                 #如果道具归0则将该项置空
                 if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
 
                 #写入副表
-                if(lc!='1'):
+                if(lc=='2'):
                     with open(user_path / f"UserList{lc}.json", 'w', encoding='utf-8') as f:
-                        json.dump(data2, f, indent=4)                
+                        json.dump(data2, f, indent=4)     
+
+                if(lc=='3'):
+                    with open(user_path / f"UserList{lc}.json", 'w', encoding='utf-8') as f:
+                        json.dump(data3, f, indent=4)                
 
                 #写入文件
                 with open(user_path / file_name, 'w', encoding='utf-8') as f:
@@ -1248,11 +1490,11 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
         if(data[str(user_id)]['spike'] >= 150):
             spike = 0
             rnd = random.randint(1,100)
-            if(rnd <= 1): spike = 500
-            if(rnd > 1 and rnd <= 10): spike = 300
-            if(rnd > 10 and rnd <= 30): spike = 150
-            if(rnd > 30 and rnd <= 60): spike = 80
-            if(rnd > 60 and rnd <= 100): spike = 35
+            if(rnd <= 5): spike = 500
+            if(rnd > 5 and rnd <= 15): spike = 300
+            if(rnd > 15 and rnd <= 35): spike = 155
+            if(rnd > 35 and rnd <= 75): spike = 75
+            if(rnd > 75 and rnd <= 100): spike = 35
 
             data[str(user_id)]['spike'] += (spike - 150)
 
@@ -1310,13 +1552,23 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 
         #如果赌的不是一号猎场就打开副数据表
         data2 = {}
-        if(nums[2]!='1'):
+        data3 = {}
+        if(nums[2]=='2'):
             with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
 
             #没有开通二猎场
             if(not str(user_id) in data2):
                 await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
+        
+        if(nums[2]=='3'):
+            with open(user_path / f"UserList{nums[2]}.json", 'r', encoding='utf-8') as f:
+                data3 = json.load(f)
+            
+            #没有开通三猎场
+            if(not str(user_id) in data3):
+                await dubo.finish("你现在du不了这个猎场的kid，请至少拥有该猎场的一个kid", at_sender=True)
+
 
         #加入赌场
         if(not str(group) in data_du):
@@ -1356,7 +1608,8 @@ async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                 point.append(random.randint(10000, 20000))
 
             #如果不是一猎场就对副数据表进行修改
-            if(nums[2]!='1'): data = data2
+            if(nums[2]=='2'): data = data2
+            if(nums[2]=='3'): data = data3
 
             #根据点数大小来决定数据交换
             for i in range(person_num):

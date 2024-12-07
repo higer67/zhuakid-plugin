@@ -2,15 +2,18 @@ from nonebot.log import logger
 from pathlib import Path
 from .config import *
 from .list2 import *
+from .list3 import *
 from .shop import item
 import random
 import re
 import datetime
 import json
 
+
 __all__ = [
     'kid_path_lc1',
     'kid_path_lc2',
+    'kid_path_lc3',
     'current_liechang',
     'kid_level1',
     'kid_level2',
@@ -35,6 +38,7 @@ __all__ = [
 #Kid图鉴
 kid_path_lc1 = Path() / "data" / "KidLc1"   #一号猎场
 kid_path_lc2 = Path() / "data" / "KidLc2"   #二号猎场
+kid_path_lc3 = Path() / "data" / "KidLc3"   #三号猎场
 
 kid_level1 = "Kid1"
 kid_level2 = "Kid2"
@@ -51,11 +55,13 @@ def current_liechang(command):
         return kid_path_lc1
     if(command=='2'):
         return kid_path_lc2
+    if(command=='3'):
+        return kid_path_lc3
 
 #奖励刺儿
 def give_spike(level):
     if(level==1): spike_give = 5
-    if(level==2): spike_give = 10
+    if(level==2): spike_give = 101
     if(level==3): spike_give = 15
     if(level==4): spike_give = 20
     if(level==5): spike_give = 25   
@@ -70,6 +76,8 @@ def print_zhua(level, num, liechang_number):
         current_data = kid_data
     if(liechang_number=='2'):
         current_data = kid_data2
+    if(liechang_number=='3'):
+        current_data = kid_data3
     #根据猎场确定路径
     kid_level1_path = kid_path / kid_level1
     kid_level2_path = kid_path / kid_level2
@@ -122,6 +130,9 @@ def zhua_random(a=10, b=50, c=200, d=500, liechang_number='1'):
     if(liechang_number=='2'):
         current_name_list = kid_name_list2
         current_data = kid_data2
+    if(liechang_number=='3'):
+        current_name_list = kid_name_list3
+        current_data = kid_data3
     #根据等级确定坐标
     if(level == 1): zhua_path = kid_level1_path
     if(level == 2): zhua_path = kid_level2_path
@@ -185,6 +196,8 @@ def find_kid_single_lc(value, liechang_number):
         current_data = kid_data
     if(liechang_number=='2'):
         current_data = kid_data2
+    if(liechang_number=='3'):
+        current_data = kid_data3
     #一号猎场查询，由于一号猎场为内测时期产物，没有经过良好维护，现在已经成石山，所以特别查询
     for k, v in current_data.items():
         for i, j in v.items():
@@ -206,6 +219,12 @@ def find_kid(value):
         for i, j in v.items():
             if(j['name'].lower()==value):
                 return [k, i, '2']   #返回等级与编号
+    
+    #三号猎场查询
+    for k, v in kid_data3.items():
+        for i, j in v.items():
+            if(j['name'].lower()==value):
+                return [k, i, '3']   #返回等级与编号
 
     return 0
 
