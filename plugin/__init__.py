@@ -1,11 +1,6 @@
-#加载异步与通信
-#from httpx import AsyncClient
-#import asyncio
-#加载机器人框架
 from nonebot.adapters.onebot.v11 import MessageSegment, Message
 from nonebot.adapters.onebot.v11 import GROUP
 from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent
-# from nonebot_plugin_alconna.uniseg import UniMessage, MsgTarget, Target, SupportScope
 from nonebot.log import logger
 from nonebot import on_command, get_driver, on_fullmatch
 from nonebot.params import CommandArg
@@ -19,13 +14,12 @@ import time
 #加载数学算法相关
 import random
 #加载KID档案信息
+from .config import *
 from .list1 import *
 from .list2 import *
 from .list3 import *
 #加载商店信息和商店交互
 from .shop import item, today_item
-#加载剧情和NPC档案
-from .story import npc_da
 #加载隐藏kid档案
 from .secret import secret_list
 #加载抓kid相关的函数
@@ -35,36 +29,6 @@ from .kidjd import *
 from .pvp import *
 from .render import *
 from .admin import *
-
-########数据信息#######
-
-#抓kid专用群
-group_img = Path() / "data" / "group.jpg"
-
-#除了Kid名字以外的其他key值
-other = ["next_time", "next_recover_time", "spike", "date", "buff", "item", "lc"]
-
-#隐藏级别kid
-kid_level0 = "Kid0"
-kid_level0_path = kid_path_lc1 / kid_level0
-
-#商店数据，商店的数据一天之内对所有玩家共通，每过一天就会刷新一次商品，每天早上6点到晚上10点营业中
-shop_database = Path() / "data" / "Shop" / "Shop.json"
-shop_open_img = Path() / "data" / "Shop" / "开张图.png"
-shop_work_img = Path() / "data" / "Shop" / "营业图.png"
-
-#更新日志
-update_text = "详细信息请前往抓kid wiki\n https://docs.qq.com/smartsheet/DVUZtQWlNTG1zZVhN \n进行查看"
-#管理员ID
-bot_owner_id = ["2153454883", "1047392286", "121096913"]
-
-#用户信息
-user_path = Path() / "data" / "UserList"
-file_name = "UserData.json"
-
-#赌场信息
-duchang_list = Path() / "data" / "DuChang" / "duchang.json"
-duchang_open_img = Path() / "data" / "DuChang" / "duchang.png"
 
 ##初始化
 driver = get_driver()
@@ -774,7 +738,7 @@ async def kid_shop(bot: Bot, event: Event):
 #购买商品
 buy = on_command('buy', permission=GROUP, priority=1, block=True)
 @buy.handle()
-async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+async def buy_handle(event: GroupMessageEvent, arg: Message = CommandArg()):
     #打开文件
     #比较营业时间与时间点
     current_time = datetime.datetime.now().time()
@@ -930,7 +894,7 @@ async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
 #祈愿功能，用于小号能量以换取kid，必须持有kid充能器
 pray = on_command('祈愿', permission=GROUP, priority=1, block=True)
 @pray.handle()
-async def pray_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+async def pray_handle(event: GroupMessageEvent, arg: Message = CommandArg()):
     data = {}
     user_id = event.get_user_id()
     #读取用户信息
@@ -1075,7 +1039,7 @@ async def pray_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
 #使用道具，整个抓Kid里最繁琐的函数，且会持续更新
 daoju = on_command('use', permission=GROUP, priority=1, block=True)
 @daoju.handle()
-async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+async def daoju_handle(event: GroupMessageEvent, arg: Message = CommandArg()):
     #打开文件
     data = {}
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
@@ -1678,7 +1642,7 @@ async def ckdj_handle(arg: Message = CommandArg()):
 #买刮刮乐
 ticket = on_fullmatch('/cp', permission=GROUP, priority=1, block=True)
 @ticket.handle()
-async def ticket_handle(bot: Bot, event: GroupMessageEvent):
+async def ticket_handle(event: GroupMessageEvent):
 
     current_time = datetime.datetime.now().time()
     hour = current_time.hour
@@ -1722,7 +1686,7 @@ async def ticket_handle(bot: Bot, event: GroupMessageEvent):
 #5人场赌博
 dubo = on_command('du', permission=GROUP, priority=1, block=True)
 @dubo.handle()
-async def dubo_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+async def dubo_handle(event: GroupMessageEvent, arg: Message = CommandArg()):
 
     person_num = 5  #一局最多人数
 

@@ -1,12 +1,12 @@
-from .__init__ import user_path, file_name, bot_owner_id
-from .__init__ import GROUP
-from .__init__ import Bot, GroupMessageEvent, Message, MessageSegment
-from .__init__ import on_command, CommandArg, on_fullmatch
-from .__init__ import json
-from .__init__ import datetime
-from .__init__ import os
-from .__init__ import shop_database
-from .__init__ import Path
+from .config import user_path, file_name, bot_owner_id, shop_database
+from nonebot.adapters.onebot.v11 import GROUP
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageSegment
+from nonebot import on_command, on_fullmatch
+from nonebot.params import CommandArg
+import json
+import datetime
+import os
+from pathlib import Path
 
 import psutil
 import platform

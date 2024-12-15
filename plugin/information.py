@@ -1,7 +1,9 @@
-from .__init__ import on_command, on_fullmatch, CommandArg
-from .__init__ import GROUP
-from .__init__ import npc_da, update_text
-from .__init__ import Message
+from nonebot import on_command, on_fullmatch
+from nonebot.params import CommandArg
+from nonebot.adapters.onebot.v11 import GROUP
+from .config import update_text
+from nonebot.adapters.onebot.v11 import Message
+from .story import npc_da
 
 #查看帮助菜单和更新信息
 help = on_fullmatch('/help', permission=GROUP, priority=1, block=True)

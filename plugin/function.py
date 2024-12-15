@@ -4,6 +4,7 @@ from .list1 import *
 from .list2 import *
 from .list3 import *
 from .shop import item
+from .config import kid_path_lc1, kid_path_lc2, kid_path_lc3
 import random
 import re
 import datetime
@@ -36,10 +37,6 @@ __all__ = [
 ]
 
 #Kid图鉴
-kid_path_lc1 = Path() / "data" / "KidLc1"   #一号猎场
-kid_path_lc2 = Path() / "data" / "KidLc2"   #二号猎场
-kid_path_lc3 = Path() / "data" / "KidLc3"   #三号猎场
-
 kid_level1 = "Kid1"
 kid_level2 = "Kid2"
 kid_level3 = "Kid3"
