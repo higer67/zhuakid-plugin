@@ -174,7 +174,7 @@ kid_name_list = {
         'the guy',
         'cd kid',
         '珠峰喵',
-        'kameilia',
+        'kamilia',
         'pdplayer kid',
         'lili'
     ]
@@ -905,7 +905,7 @@ kid_data = {
             '珠峰无数次回忆起他当年跑25trap的时光，这使他名垂千古'
         },
         '12':{
-            'name': 'kameilia',
+            'name': 'kamilia',
             'description':
             '原本k娘只是在睡觉，直到某一天她吸入了一只kid……'
         },

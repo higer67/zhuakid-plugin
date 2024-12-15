@@ -61,7 +61,7 @@ def current_liechang(command):
 #奖励刺儿
 def give_spike(level):
     if(level==1): spike_give = 5
-    if(level==2): spike_give = 101
+    if(level==2): spike_give = 10
     if(level==3): spike_give = 15
     if(level==4): spike_give = 20
     if(level==5): spike_give = 25   
@@ -159,7 +159,7 @@ def zhua_random(a=10, b=50, c=200, d=500, liechang_number='1'):
 ######打印商品信息######
 def shop_list(item_list):
     level_to_str = {0:"一", 1:"二", 2:"三", 3:"四", 4:"五"}
-    text = "\n今日商品\n"
+    text = "今日商品\n"
     level_str = ["", "", "", "", ""]
     for i in range(4, -1, -1):
         for k, v in item.items():

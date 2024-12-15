@@ -28,7 +28,7 @@ def draw_text_outline(draw: ImageDraw, x: int, y: int, text: str, font: ImageFon
     draw.text((x, y), text, fill=color, font=font, align="center")
 
 #输入用户昵称和刺儿数量，输出签到页面
-def draw_qd(nickname: str, spike: int):
+def draw_qd(nickname: str, spike: int, extra_spike: int=0):
     # 创建一个白色背景的图像
     width, height = 960, 608
     image = Image.new("RGB", (width, height), "white")
@@ -39,16 +39,19 @@ def draw_qd(nickname: str, spike: int):
     #绘制背景图
     texture_render(image, background_qd, 0, 0)
     #把真寻图片贴到背景图上
-    texture_render(image, zhenxun, 0, 160, 0.5)
+    texture_render(image, zhenxun, -32, 160, 0.5)
 
     # 设置字体和颜色
-    font = ImageFont.truetype(font_path, 50)
-    text = f"签到成功，奖励你{spike}刺儿"
+    font = ImageFont.truetype(font_path, 48)
+    if extra_spike==0:
+        text = f"签到成功，奖励你{spike}刺儿"
+    else:
+        text = f"签到成功，奖励你{spike}+{extra_spike}刺儿"
     text_color = "black"
     outline_color = "white"
 
     #文本位置
-    x = 364
+    x = 300
     y = 304
 
     # 在图片上绘制文本
