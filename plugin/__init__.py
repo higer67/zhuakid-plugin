@@ -18,10 +18,8 @@ import datetime
 import time
 #加载数学算法相关
 import random
-import psutil
-import platform
 #加载KID档案信息
-from .config import *
+from .list1 import *
 from .list2 import *
 from .list3 import *
 #加载商店信息和商店交互
@@ -36,6 +34,7 @@ from .event import event_happen, outofdanger, kid_pvp_event
 from .kidjd import *
 from .pvp import *
 from .render import *
+from .admin import *
 
 ########数据信息#######
 
@@ -72,375 +71,11 @@ driver = get_driver()
 @driver.on_startup
 async def _():
     logger.info("抓Kid系统已经开启...")
-    
-# __all__ = ['status']
-# 状态
-status = on_fullmatch('状态', priority=5)
-@status.handle()
-async def handle_status(event: GroupMessageEvent):
-    #判断是不是主人
-    if str(event.user_id) not in bot_owner_id:
-        logger.info("非主人发送状态")
-        return
-
-    #获取系统信息
-    system_info = platform.system()
-    #获取系统版本
-    system_version = platform.version()
-    #获取系统CPU使用率
-    cpu_percent = psutil.cpu_percent(interval=1)
-    #获取系统内存使用率
-    memory_percent = psutil.virtual_memory().percent
-    #获取系统磁盘使用率
-    disk_percent = psutil.disk_usage('/').percent
-
-    #发送信息
-    await status.send(f"\n系统：{system_info}.{system_version}\nCPU使用率：{cpu_percent}%\n内存使用率：{memory_percent}%\n磁盘使用率：{disk_percent}%", at_sender=True)
-    
-
-#查看帮助菜单和更新信息
-help = on_fullmatch('/help', permission=GROUP, priority=1, block=True)
-@help.handle()
-async def zhua_help():
-    await help.finish(f"该机器人目前尚在开发中\n\n"+
-          "更新："+update_text+
-          "\n\nzhuakid:  抓一个Kid\n签到： 每日签到\n/zs (Kid名字):  展示抓过的Kid\n/ck (Kid名字):  查看该Kid数量\nck: 查看刺儿余额\nkidjd： 查看抓Kid进度"
-          +"\nshop:  查看今日商品\n/buy (数量)（道具名):  购买道具\n/use (道具名):  使用道具")
-
-#更新公告
-gong_gao = on_fullmatch('公告', permission=GROUP, priority=1, block=True)
-@gong_gao.handle()
-async def gong_gao_handle():
-    text = "“中央广场传来一声巨响，发生什么事情了？旅行者去看看吧！”Roris说到。\n回小镇的路上远远就能看到中央广场那有一束直冲云霄的黑柱.....\n嗯...看来，远古kid的灵魂被激活了。中央广场浮着一团黑色旋涡。“Roris！解释一下啊！”\n“这么多年了，kid祖先所在之地封印终于被解除了，旅行者，你也许能回家了哦~~不过现在还没有进入这个最终猎场的条件呢，一旦你真的进入了，或许就真能回到原先的世界了！”\n“真的？啊这不是一个长线运营的休闲游戏吗，原来真的有会完结的主线啊！”\n嗯呐，可路还很长~旅行者继续加油zhuakid吧！"        
-    await gong_gao.finish(text)
-
-#NPC档案
-npc = on_command('npc', permission=GROUP, priority=1, block=True)
-@npc.handle()
-async def npc_handle(arg: Message = CommandArg()):
-    name = str(arg)
-    if(name in npc_da): 
-        await npc.finish(npc_da[name])
-
-#解密3-2
-passwd = on_fullmatch('/password ThisIsThePassword', permission=GROUP, priority=1, block=True)
-@passwd.handle()
-async def passwd_2():
-    jiemi31_image_path = "C:\\bot\\roris\\Data\\Image\\jiemi31.png"
-    jiemi31_image_segment = MessageSegment.image(jiemi31_image_path)
-    await passwd.finish("密码正确——解封成功——以下为情报内容：\n" + jiemi31_image_segment + "提示：Lands Await New Oceans Tracing Aeons。")
-
-#解密3-3
-playjiemi = on_fullmatch('/PLAY AIRCRAFTBATTLESHIP', permission=GROUP, priority=1, block=True)
-@playjiemi.handle()
-async def play_jiemi():
-    jiemi32_image_path = "C:\\bot\\roris\\Data\\Image\\jiemi32.png"
-    jiemi32_image_segment = MessageSegment.image(jiemi32_image_path)
-    await passwd.finish("启动成功———\n" + jiemi32_image_segment + "请提取对应编号：_____________")
-##########################管理员指令###########################
-
-#查看用户数量
-len_user = on_command("用户数", permission=GROUP, priority=1, block=True)
-@len_user.handle()
-async def len_user_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #统计数量
-    count = len(data)
-
-    await len_user.finish(f"zhuakid游戏目前共有{count}个用户！", at_sender=True)
-
-#全服发放刺儿
-fafang = on_command("全服发放", permission=GROUP, priority=1, block=True)
-@fafang.handle()
-async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #解析参数
-    jiangli = int(str(arg))
-    if(jiangli <= 0):
-        return
-    
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #给每个账户发刺儿
-    for v in data.values():
-        v['spike'] += jiangli
-
-    #写入文件
-    with open(user_path / file_name, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
-
-#查询某个用户的刺儿
-ck_admin_single = on_command("查询", permission=GROUP, priority=1, block=True)
-@ck_admin_single.handle()
-async def ck_admin_single_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    arg = str(arg).split(" ")
-    #得到at的人的qq号
-    user_id = arg[0]
-
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #没有这个用户
-    if(not user_id in data):
-        await fafang_single.finish("此人还没有注册zhuakid账号", at_sender=True)
-
-    #有这个用户
-    spike = data[user_id]['spike']
-    await ck_admin_single.finish(f"该用户目前拥有{spike}刺儿！", at_sender=True)
-
-#给某个用户发放刺儿
-fafang_single = on_command("发放", permission=GROUP, priority=1, block=True)
-@fafang_single.handle()
-async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #得到at的人的qq号
-    arg = str(arg).split(" ")
-    user_id = arg[0]
-
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #没有这个用户
-    if(not user_id in data):
-        await fafang_single.finish("找不到该用户信息", at_sender=True)
-
-    #有这个用户
-    try:
-        jiangli = int(arg[1])
-    except:
-        await fafang_single.finish("格式错误，请按照/发放 (用户QQ号)(数量)的格式输入！", at_sender=True)
-    else:
-        if(jiangli <= 0):
-            return
-        data[user_id]['spike'] += jiangli
-
-        #写入文件
-        with open(user_path / file_name, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
-
-        await fafang_single.finish(f"给"+MessageSegment.at(user_id)+f"发放{jiangli}刺儿成功！", at_sender=True)
-
-#给某个用户设定指定刺儿
-set_single = on_command("设定", permission=GROUP, priority=1, block=True)
-@set_single.handle()
-async def set_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #得到at的人的qq号
-    arg = str(arg).split(" ")
-    user_id = arg[0]
-
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #没有这个用户
-    if(not user_id in data):
-        await set_single.finish("找不到该用户信息", at_sender=True)
-
-    #有这个用户
-    try:
-        jiangli = int(arg[1])
-    except:
-        await set_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
-    else:
-        if(jiangli <= 0):
-            return
-        data[user_id]['spike'] = jiangli
-
-        #写入文件
-        with open(user_path / file_name, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
-
-        await set_single.finish(MessageSegment.at(user_id)+f"的刺儿已设定为{jiangli}！", at_sender=True)
-
-#给某个用户扣除刺儿
-deduct_single = on_command("扣除", permission=GROUP, priority=1, block=True)
-@deduct_single.handle()
-async def deduct_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #得到at的人的qq号
-    arg = str(arg).split(" ")
-    user_id = arg[0]
-
-    #打开文件
-    data = {}
-    with open(user_path / file_name, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    #没有这个用户
-    if(not user_id in data):
-        await deduct_single.finish("找不到该用户信息", at_sender=True)
-
-    #有这个用户
-    try:
-        jiangli = int(arg[1])
-    except:
-        await deduct_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
-    else:
-        if(jiangli <= 0):
-            return
-        data[user_id]['spike'] -= jiangli
-        if data[user_id]['spike'] < 0:
-            data[user_id]['spike'] = 0
-
-        #写入文件
-        with open(user_path / file_name, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
-
-        await deduct_single.finish(f"已扣除"+MessageSegment.at(user_id)+f"{jiangli}刺儿！", at_sender=True)
-
-#查询超市购买历史记录
-ck_admin_history = on_command("账单", permission=GROUP, priority=1, block=True)
-@ck_admin_history.handle()
-async def ck_admin_history_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-
-    #打开文件
-    data_bili = {}
-    today = ""
-    if(len(str(arg))==0):
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-    else:
-        today = str(arg)
-    
-    bili = Path()/"data"/"Shop"/f"{today}.json"
-    if(os.path.exists(bili)):
-        with open(bili, 'r', encoding='utf-8') as f:
-            data_bili = json.load(f)
-
-        text = f"{today}\n"
-        for v in data_bili['list']:
-            text += f"{v}\n"
-            
-        # 创建转发消息
-        forward_messages = [
-            {
-                "type": "node",
-                "data": {
-                    "name": "商品列表",
-                    "uin": event.self_id,  # 设置为机器人的QQ号
-                    "content": text
-                }
-            }
-        ]
-        
-        # 转发消息
-        if forward_messages:
-            await bot.send_forward_msg(
-                group_id=event.group_id,  # 转发到当前群组
-                messages=forward_messages
-            )
-        # await ck_admin_history.finish(text, at_sender=True)
-    else:
-        await ck_admin_history.finish("没有找到该日期的账单！", at_sender=True)
-
-#神权！清除zhuakid的cd
-admin_timeClear = on_command("清除冷却", permission=GROUP, priority=1, block=True)
-@admin_timeClear.handle()
-async def timeClear_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    
-    #判断是不是管理员账号
-    if str(event.user_id) not in bot_owner_id:
-        return
-    
-    arg = str(arg).split(" ")
-    #清除冷却目标的qq号
-    user_id = arg[0]
-
-    data = {}
-    if(os.path.exists(user_path / file_name)):
-        with open(user_path / file_name, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    
-    #没有这个用户
-    if(not user_id in data):
-        await fafang_single.finish("找不到该用户信息", at_sender=True)
-    
-    current_time = datetime.datetime.now()
-    next_time_r = current_time + datetime.timedelta(seconds=1)
-    data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
-    data[str(user_id)]['next_clock_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
-    data[str(user_id)]['work_end_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
-
-    #写入文件
-    with open(user_path / file_name, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
-    await admin_timeClear.finish(MessageSegment.at(user_id)+f"的冷却已清除", at_sender=True)
-
-#手动进行商店的补货(刷新)
-admin_Restock = on_command("补货", permission=GROUP, priority=1, block=True)
-@admin_Restock.handle()
-async def Restock_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
-    shop_data ={}
-    current_date = datetime.date.today()  #返回今天日期
-    last_date = current_date - datetime.timedelta(days=1)
-    if(os.path.exists(shop_database)):
-        #打开商店仓库
-        with open(shop_database, 'r', encoding='utf-8') as f:
-            shop_data = json.load(f)
-    else:
-        await admin_Restock.finish("商店不存在。", at_sender=True)       
-
-    shop_data["date"] = last_date.strftime("%Y-%m-%d %H:%M:%S")
-    #写入文件
-    with open(shop_database, 'w', encoding='utf-8') as f:
-        json.dump(shop_data, f, indent=4)
-    await admin_Restock.finish("补货已完成", at_sender=True)
-
-##########################玩家游玩指令#########################
-
-#猎场信息
-cklc = on_fullmatch('cklc', permission=GROUP, priority=1, block=True)
-@cklc.handle()
-async def cklc_handle():
-    text = "#######猎场信息######\n1号猎场：田园\n危险等级：0\n\n2号猎场：迷雾森林\n危险等级：2\n\n3号猎场：水晶矿洞\n危险等级：3\n\n？号猎场：虚数空间\n危险等级：5"
-    await cklc.finish(text)
-
-#竞技场细则
-pvpck = on_fullmatch('0场细则', permission=GROUP, priority=1, block=True)
-@pvpck.handle()
-async def pvpck_handle():
-    text = "有关0号猎场细则：\n\n在本猎场，zhuakid将会从自己的2猎收集池里抓取。竞技场内共十个擂台，抓取完后系统会自动放上十个擂台中的某一个。但是如果该擂台被占用了，就会发生一次PK来决定谁使用这个擂台，一段时间后十个擂台上留下的人将会发放200刺儿的奖励，并重新开始。目前处于试用阶段，但没任何的debuff，可大胆测试！"
-    await pvpck.finish(text)
 
 #切换猎场
 qhlc = on_command('qhlc', permission=GROUP, priority=1, block=True)
 @qhlc.handle()
-async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+async def qhlc_handle(event: GroupMessageEvent, arg: Message = CommandArg()):
     #读入用户主要列表
     data = {}
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
@@ -473,8 +108,8 @@ async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             #一些啥都干不了的buff
             if(data[user_id].get('buff')=='lost'): return
 
-            #原本就在这个猎场
             if('lc' in data[user_id]):
+                #原本就在这个猎场
                 if(data[user_id]['lc']==number):
                     await qhlc.finish("你现在就在这个猎场呀~", at_sender=True)
 
@@ -487,7 +122,6 @@ async def qhlc_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
             await qhlc.send(f"已经成功切换到{number}号猎场！", at_sender=True)
     else:
         await qhlc.send("你还没尝试抓过kid.....", at_sender=True)
-
 
 #随机抓出一个Kid，且有时间间隔限制
 catch = on_fullmatch('zhuakid', permission=GROUP, priority=1, block=True)
@@ -625,13 +259,9 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 
         #如果是2号猎场以上需要存到另外的表中
         data2 = {}
-        data3 = {}
-        if(data[str(user_id)]['lc']=='2'):
+        if(data[str(user_id)]['lc']!='1'):
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
                 data2 = json.load(f)
-        if(data[str(user_id)]['lc']=='3'):
-            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'r', encoding='utf-8') as f:
-                data3 = json.load(f)
 
         #确定抓到哪个kid
         kid = zhua_random(liechang_number=data[str(user_id)]['lc'])
@@ -669,36 +299,17 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
                 new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                 data[str(user_id)][name] = 0
             data[str(user_id)][name] += 1  #数量+1
-        elif (data[str(user_id)]['lc']=='2'):
+        else:
             if(str(user_id) in data2):
                 if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                     new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                     data2[str(user_id)][str(level)+'_'+str(num)] = 0
                 data2[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
-            else:
-                new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                data2[str(user_id)] = {}
-                data2[str(user_id)][str(level)+'_'+str(num)] = 1
-        elif (data[str(user_id)]['lc']=='3'):
-            if(str(user_id) in data3):
-                if(not (str(level)+'_'+str(num)) in data3[str(user_id)]):
-                    new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                    data3[str(user_id)][str(level)+'_'+str(num)] = 0
-                data3[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
-            else:
-                new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                data3[str(user_id)] = {}
-                data3[str(user_id)][str(level)+'_'+str(num)] = 1
-
-
-            
+        
         #写入kid收集表(副统计表)
         if(data[str(user_id)]['lc']=='2'):
             with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'w', encoding='utf-8') as f:
                 json.dump(data2, f, indent=4)
-        elif(data[str(user_id)]['lc']=='3'):
-            with open(user_path / f"UserList{data[str(user_id)]['lc']}.json", 'w', encoding='utf-8') as f:
-                json.dump(data3, f, indent=4)
 
         #写入主数据表
         with open(user_path / file_name, 'w', encoding='utf-8') as f:
@@ -738,7 +349,7 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 ##每日签到
 qd = on_fullmatch('签到', permission=GROUP, priority=1, block=True)
 @qd.handle()
-async def dailyqd(bot: Bot, event: GroupMessageEvent):
+async def dailyqd(event: GroupMessageEvent):
     data = {}
     if(os.path.exists(user_path / file_name)):
         #读取刺儿数量
@@ -802,7 +413,7 @@ async def dailyqd(bot: Bot, event: GroupMessageEvent):
 ##查看余额
 ck = on_fullmatch('ck', permission=GROUP, priority=1, block=True)
 @ck.handle()
-async def cha_spike(bot: Bot, event: Event):
+async def cha_spike(event: Event):
     #打开文件
     data = {}
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
@@ -819,7 +430,7 @@ async def cha_spike(bot: Bot, event: Event):
 #查看kid库存
 mykid = on_fullmatch('mykid lc1', permission=GROUP, priority=1, block=True)
 @mykid.handle()
-async def mykid_handle(bot: Bot, event: GroupMessageEvent):
+async def mykid_handle(bot:Bot, event: GroupMessageEvent):
     #打开文件
     data = {}
     with open(user_path / file_name, 'r', encoding='utf-8') as f:
@@ -888,7 +499,7 @@ async def mykid_handle(bot: Bot, event: GroupMessageEvent):
 #展示Kid
 zs = on_command('zs ', permission=GROUP, priority=1, block=True)
 @zs.handle()
-async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
+async def zhanshi(event: Event, arg: Message = CommandArg()):
     level = 0
     number = 0
     #获取输入的名字
@@ -970,7 +581,7 @@ async def zhanshi(bot: Bot, event: Event, arg: Message = CommandArg()):
 #查看某Kid数量
 cknum = on_command('ck', permission=GROUP, priority=1, block=True)
 @cknum.handle()
-async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
+async def cha_kid_number(event: Event, arg: Message = CommandArg()):
     number = 0
     #获取输入的名字
     name = str(arg).lower()
@@ -1026,7 +637,7 @@ async def cha_kid_number(bot: Bot, event: Event, arg: Message = CommandArg()):
 #查看Kid进度
 jd = on_fullmatch('kidjd', permission=GROUP, priority=1, block=True)
 @jd.handle()
-async def zhuajd(bot: Bot, event: Event):
+async def zhuajd(event: Event):
     user_id = event.get_user_id()
 
     #打开文件
@@ -1037,10 +648,6 @@ async def zhuajd(bot: Bot, event: Event):
     data2 = {}
     with open(user_path / f"UserList2.json", 'r', encoding='utf-8') as f:
         data2 = json.load(f)
-    
-    data3 = {}
-    with open(user_path / f"UserList3.json", 'r', encoding='utf-8') as f:
-        data3 = json.load(f)
 
     #计数
     count = [0, 0, 0, 0, 0] #抓的数量
@@ -1048,7 +655,6 @@ async def zhuajd(bot: Bot, event: Event):
 
     jindu = 0  #抓的进度
     maxjindu = 0  #总进度
-
 
     #计算总数
     for k, v in kid_name_list.items():
@@ -1072,19 +678,17 @@ async def zhuajd(bot: Bot, event: Event):
                         count[int(k)-1] += 1
                         jindu += int(k)
 
-        #二号猎场进度
-        if(str(user_id) in data2):
-            for k in data2[str(user_id)].keys():
-                level = k[0]
-                count[int(level)-1] += 1
-                jindu += int(level)
-        
-        #三号猎场进度
-        if(str(user_id) in data3):
-            for k in data3[str(user_id)].keys():
-                level = k[0]
-                count[int(level)-1] += 1
-                jindu += int(level)
+        #二号猎场及其以后进度
+        for lc in range(2, 4):
+            #打开文件
+            with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
+                data2 = json.load(f)
+            #计入进度
+            if(str(user_id) in data2):
+                for k in data2[str(user_id)].keys():
+                    level = k[0]
+                    count[int(level)-1] += 1
+                    jindu += int(level)
 
         #计算总进度
         maxjindu = max[0]+2*max[1]+3*max[2]+4*max[3]+5*max[4]
@@ -1166,8 +770,6 @@ async def kid_shop(bot: Bot, event: Event):
             group_id=event.group_id,  # 转发到当前群组
             messages=forward_messages
         )
-    # item_text = shop_list(shop_data["item"])
-    # await shop.send(item_text + MessageSegment.image(shop_work_img), at_sender=True)
 
 #购买商品
 buy = on_command('buy', permission=GROUP, priority=1, block=True)
@@ -1425,13 +1027,9 @@ async def pray_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
  
                 #打开副表
                 data2 = {}
-                data3 = {}
-                if(lc=='2'):
+                if(lc!='1'):
                     with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
-                if(lc=='3'):
-                    with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
-                        data3 = json.load(f)
 
                 #计数
                 if(lc=='1'):
@@ -1439,7 +1037,7 @@ async def pray_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data[str(user_id)][name] = 0                   
                     data[str(user_id)][name] += 1
-                elif(lc=='2'):
+                else:
                     if(str(user_id) in data2):
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                             new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
@@ -1448,26 +1046,12 @@ async def pray_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Command
                     else:
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data2[str(user_id)] = {}
-                        data2[str(user_id)][str(level)+'_'+str(num)] = 1 
-                elif(lc=='3'):
-                    if(str(user_id) in data3):
-                        if(not (str(level)+'_'+str(num)) in data3[str(user_id)]):
-                            new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                            data3[str(user_id)][str(level)+'_'+str(num)] = 0
-                        data3[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
-                    else:
-                        new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                        data3[str(user_id)] = {}
-                        data3[str(user_id)][str(level)+'_'+str(num)] = 1               
+                        data2[str(user_id)][str(level)+'_'+str(num)] = 1              
 
                 #写入副表
-                if(lc=='2'):
+                if(lc!='1'):
                     with open(user_path / f"UserList{lc}.json", 'w', encoding='utf-8') as f:
-                        json.dump(data2, f, indent=4)     
-
-                if(lc=='3'):
-                    with open(user_path / f"UserList{lc}.json", 'w', encoding='utf-8') as f:
-                        json.dump(data3, f, indent=4)                
+                        json.dump(data2, f, indent=4)                  
 
                 #写入文件
                 with open(user_path / file_name, 'w', encoding='utf-8') as f:
@@ -2008,85 +1592,6 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     await daoju.finish("使用成功，你获得了200个刺儿", at_sender=True)
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
-            
-            
-                
-                #下面这一大段都不用了
-                '''
-                if(use_item_name.lower()=="kid献祭器"):
-                    if(data.get(user_id).get('item').get('kid献祭器',0) > 0):
-                        if liechang_number=='3':
-                            if data[str(user_id)].get("item").get('神秘碎片', 0) < 7:
-                                await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
-                        next_time = get_time_from_data(data[str(user_id)])
-                        current_time = datetime.datetime.now()
-                        #没到下一次抓的时间
-                        if(current_time < next_time):
-                            text = time_text(str(next_time-current_time))
-                            await daoju.finish(f"别抓啦，{text}后再来吧", at_sender = True)
-                        #将时间更新
-                        if(user_id!=bot_owner_id):
-                            next_time = current_time + datetime.timedelta(minutes=30)
-                            data[str(user_id)]['next_time'] = time_decode(next_time)
-                        #将选中的kid清零
-                        nums = find_kid(arg2.lower())
-                        #查不到这个kid的档案，终止
-                        if(nums==0): 
-                            logger.info("因为不存在该kid献祭被中断")
-                            return
-                        #进行献祭
-                        if(nums[2]!=liechang_number):
-                            await daoju.finish(f"你不能献祭别的猎场的kid！", at_sender=True)
-                        if(nums[2]=='1'):
-                            #一号猎场
-                            if(data[str(user_id)].get(arg2.lower(),0) >= 1):
-                                data[str(user_id)][arg2.lower()] -= 1
-                            else:
-                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
-                        elif(nums[2]=='2'):
-                            #二号猎场及其以后，按等级和编号确定
-                            data2 = open_data(user_path/f"UserList{liechang_number}.json")
-                            level_num = nums[0]+'_'+nums[1]
-                            if(data2[str(user_id)].get(level_num,0) >= 1):
-                                data2[str(user_id)][level_num] -= 1
-                                save_data(user_path/f"UserList{liechang_number}.json",data2)
-                            else:
-                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
-                        elif(nums[2]=='3'):
-                            data3 = open_data(user_path/f"UserList{liechang_number}.json")
-                            level_num = nums[0]+'_'+nums[1]
-                            if(data3[str(user_id)].get(level_num,0) >= 1):
-                                data3[str(user_id)][level_num] -= 1
-                                save_data(user_path/f"UserList{liechang_number}.json",data3)
-                            else:
-                                await daoju.finish(f"你没有{arg2.lower()}可以拿来献祭了！", at_sender=True)
-
-                        #zhuakid并增加爆率
-                        rnd_success=random.randint(1,10)
-                        if rnd_success>2:
-                            '''
-                '''
-                            if nums[0]=='1':
-                                information = zhua_random(15, 60, 260, 500, liechang_number=liechang_number)
-                            elif nums[0]=='2':
-                                information = zhua_random(0, 0, 300, 800, liechang_number=liechang_number)
-                            elif nums[0]=='3':
-                                information = zhua_random(0, 250, 750, 1000, liechang_number=liechang_number)
-                            elif nums[0]=='4':
-                                information = zhua_random(100, 700, 1000, 1000, liechang_number=liechang_number)
-                            elif nums[0]=='5':
-                                information = zhua_random(400, 1000, 1000, 1000, liechang_number=liechang_number)
-                            '''
-                '''
-                            information = zhua_random(10*2*int(nums[0]), 50*1.5*int(nums[0]), 200*1.2*int(nums[0]), 500*int(nums[0]), liechang_number=liechang_number)
-                            success = 1
-                        else:
-                            success = 2
-                            fail_text = "使用失败，什么也没有得到。"
-                                
-                    else:
-                        await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
-        '''
                     
             #使用成功
             if(success==1):
@@ -2101,13 +1606,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
  
                 #打开副表
                 data2 = {}
-                data3 = {}
-                if(lc=='2'):
+                if(lc!='1'):
                     with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
                         data2 = json.load(f)
-                if(lc=='3'):
-                    with open(user_path / f"UserList{lc}.json", 'r', encoding='utf-8') as f:
-                        data3 = json.load(f)
 
                 #计数
                 if(lc=='1'):
@@ -2115,7 +1616,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data[str(user_id)][name] = 0                   
                     data[str(user_id)][name] += 1
-                elif(lc=='2'):
+                else:
                     if(str(user_id) in data2):
                         if(not (str(level)+'_'+str(num)) in data2[str(user_id)]):
                             new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
@@ -2124,17 +1625,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     else:
                         new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
                         data2[str(user_id)] = {}
-                        data2[str(user_id)][str(level)+'_'+str(num)] = 1 
-                elif(lc=='3'):
-                    if(str(user_id) in data3):
-                        if(not (str(level)+'_'+str(num)) in data3[str(user_id)]):
-                            new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                            data3[str(user_id)][str(level)+'_'+str(num)] = 0
-                        data3[str(user_id)][str(level)+'_'+str(num)] += 1  #数量+1
-                    else:
-                        new_print = "\n恭喜你抓出来一个新kid！\n"  #如果出新就添加文本
-                        data3[str(user_id)] = {}
-                        data3[str(user_id)][str(level)+'_'+str(num)] = 1               
+                        data2[str(user_id)][str(level)+'_'+str(num)] = 1             
 
                 #如果道具归0则将该项置空
                 if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
@@ -2182,7 +1673,6 @@ async def ckdj_handle(arg: Message = CommandArg()):
     if(dj_name in item):
         await ckdj.finish(dj_name+":\n"+item[dj_name][2])
     
-
 ########赌场系统#######
 
 #买刮刮乐

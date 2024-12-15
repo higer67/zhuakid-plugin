@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 from nonebot.adapters.onebot.v11 import MessageSegment
 from .function import open_data, save_data, print_zhua, time_decode
-from .config import *
+from .list1 import *
 #事件系统
 #在道具使用和普通的抓kid中会触发
 
@@ -405,7 +405,6 @@ async def CrystalStuck(user_data, user_id, message):
     if('item' in user_data[user_id]):
         if(user_data[user_id]['item'].get('神秘碎片',0) < 7):
             await message.finish("在远古的水晶矿洞前，风轻轻吹过，岩石间传来阵阵低语。眼前的巨大门扉上镶嵌着神秘的符文，发出幽幽的光辉。你注意到面前门上的部分符文与你手上的碎片相契合\n或许......收集足够的碎片就可以打开这扇门？", at_sender=True)
-    
 
     data2 = {}
     with open(user_liste2, 'r', encoding='utf-8') as f:
@@ -418,14 +417,12 @@ async def CrystalStuck(user_data, user_id, message):
             if int(level)==5:
                 num_of_level5 += 1
         
-        #一号猎场进度
+        #一号猎场有多少五级
         for k, v in kid_name_list.items():
-            #收集数
             for name in v:
                 for j in user_data[str(user_id)]:
-                    if(name.lower()==j.lower()):
-                        if int(k)==5:
-                            num_of_level5 += 1
+                    if(name.lower()==j.lower() and int(k)==5):
+                        num_of_level5 += 1
         
         if num_of_level5 < 15:
             await message.finish("水晶矿洞内传来了强大的灵力，这股力量使你无法前进。或许......多带几个猎场的高等级kid可以抵御这股力量？", at_sender=True)
@@ -449,7 +446,6 @@ async def CrystalStuck(user_data, user_id, message):
         #判断是否开辟道具栏
         if(not 'item' in user_data[str(user_id)]):
             user_data[str(user_id)]['item'] = {}
-
                     
         #奖励道具
         if rnd_tool>=1 and rnd_tool<=33:
@@ -475,7 +471,6 @@ async def CrystalStuck(user_data, user_id, message):
             #如果没有，则开辟道具
             if(not '胡萝卜' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['胡萝卜'] = 0
-
 
             carrot_rnd=random.randint(1,10)
             if carrot_rnd>3:

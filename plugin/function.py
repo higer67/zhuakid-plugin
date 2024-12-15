@@ -1,6 +1,6 @@
 from nonebot.log import logger
 from pathlib import Path
-from .config import *
+from .list1 import *
 from .list2 import *
 from .list3 import *
 from .shop import item
