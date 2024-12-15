@@ -29,6 +29,7 @@ from .kidjd import *
 from .pvp import *
 from .render import *
 from .admin import *
+from .information import *
 
 ##初始化
 driver = get_driver()

@@ -5,6 +5,8 @@ from .config import update_text
 from nonebot.adapters.onebot.v11 import Message
 from .story import npc_da
 
+__all__ = ['help', 'gong_gao', 'npc', 'cklc', 'pvpck']
+
 #查看帮助菜单和更新信息
 help = on_fullmatch('/help', permission=GROUP, priority=1, block=True)
 @help.handle()
